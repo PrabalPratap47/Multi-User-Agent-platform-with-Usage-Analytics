@@ -1,0 +1,446 @@
+{
+  "overall": "PASS",
+  "generatedAt": "2026-10-09T19:03:45.920Z",
+  "provider": "CONTROLLED (no OpenAI calls)",
+  "database": "backend/data/dashboard-verify.db",
+  "phases": {
+    "zeroRuns": {
+      "admin": {
+        "database": {
+          "last24h": 0,
+          "last7d": 0,
+          "last30d": 0,
+          "successful": 0,
+          "failed": 0
+        },
+        "api": {
+          "last24h": 0,
+          "last7d": 0,
+          "last30d": 0,
+          "successful": 0,
+          "failed": 0
+        },
+        "dashboard": {
+          "successful": "0",
+          "failed": "0"
+        },
+        "seedSuccessfulRunsExcluded": 3
+      },
+      "user1": {
+        "database": {
+          "last24h": 0,
+          "last7d": 0,
+          "last30d": 0,
+          "successful": 0,
+          "failed": 0
+        },
+        "api": {
+          "last24h": 0,
+          "last7d": 0,
+          "last30d": 0,
+          "successful": 0,
+          "failed": 0
+        },
+        "dashboard": {
+          "successful": "0",
+          "failed": "0"
+        },
+        "seedSuccessfulRunsExcluded": 1
+      },
+      "user2": {
+        "database": {
+          "last24h": 0,
+          "last7d": 0,
+          "last30d": 0,
+          "successful": 0,
+          "failed": 0
+        },
+        "api": {
+          "last24h": 0,
+          "last7d": 0,
+          "last30d": 0,
+          "successful": 0,
+          "failed": 0
+        },
+        "dashboard": {
+          "successful": "0",
+          "failed": "0"
+        },
+        "seedSuccessfulRunsExcluded": 1
+      },
+      "user3": {
+        "database": {
+          "last24h": 0,
+          "last7d": 0,
+          "last30d": 0,
+          "successful": 0,
+          "failed": 0
+        },
+        "api": {
+          "last24h": 0,
+          "last7d": 0,
+          "last30d": 0,
+          "successful": 0,
+          "failed": 0
+        },
+        "dashboard": {
+          "successful": "0",
+          "failed": "0"
+        },
+        "seedSuccessfulRunsExcluded": 1
+      }
+    },
+    "afterRuns": {
+      "admin": {
+        "database": {
+          "last24h": 8,
+          "last7d": 8,
+          "last30d": 8,
+          "successful": 5,
+          "failed": 3
+        },
+        "api": {
+          "last24h": 8,
+          "last7d": 8,
+          "last30d": 8,
+          "successful": 5,
+          "failed": 3
+        },
+        "dashboard": {
+          "successful": "5",
+          "failed": "3"
+        },
+        "seedSuccessfulRunsExcluded": 3
+      },
+      "user1": {
+        "database": {
+          "last24h": 4,
+          "last7d": 4,
+          "last30d": 4,
+          "successful": 3,
+          "failed": 1
+        },
+        "api": {
+          "last24h": 4,
+          "last7d": 4,
+          "last30d": 4,
+          "successful": 3,
+          "failed": 1
+        },
+        "dashboard": {
+          "successful": "3",
+          "failed": "1"
+        },
+        "seedSuccessfulRunsExcluded": 1
+      },
+      "user2": {
+        "database": {
+          "last24h": 2,
+          "last7d": 2,
+          "last30d": 2,
+          "successful": 2,
+          "failed": 0
+        },
+        "api": {
+          "last24h": 2,
+          "last7d": 2,
+          "last30d": 2,
+          "successful": 2,
+          "failed": 0
+        },
+        "dashboard": {
+          "successful": "2",
+          "failed": "0"
+        },
+        "seedSuccessfulRunsExcluded": 1
+      },
+      "user3": {
+        "database": {
+          "last24h": 2,
+          "last7d": 2,
+          "last30d": 2,
+          "successful": 0,
+          "failed": 2
+        },
+        "api": {
+          "last24h": 2,
+          "last7d": 2,
+          "last30d": 2,
+          "successful": 0,
+          "failed": 2
+        },
+        "dashboard": {
+          "successful": "0",
+          "failed": "2"
+        },
+        "seedSuccessfulRunsExcluded": 1
+      }
+    }
+  },
+  "checks": [
+    {
+      "phase": "zero runs (seed only)",
+      "name": "admin: API successful/failed (and 24h/7d/30d) equal the database (all eligible runs)",
+      "pass": true,
+      "detail": "API 0/0, DB 0/0; windows API 0/0/0"
+    },
+    {
+      "phase": "zero runs (seed only)",
+      "name": "admin: dashboard \"Successful Runs\" / \"Failed Runs\" cards show the API values",
+      "pass": true,
+      "detail": "dashboard 0/0"
+    },
+    {
+      "phase": "zero runs (seed only)",
+      "name": "admin: seed demo runs in scope are excluded (API successful = all SUCCESS runs 3 - seed SUCCESS runs 3)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "phase": "zero runs (seed only)",
+      "name": "admin: database counts match what the API calls did (0 succeeded, 0 failed)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "phase": "zero runs (seed only)",
+      "name": "user1: API successful/failed (and 24h/7d/30d) equal the database (user1's runs only)",
+      "pass": true,
+      "detail": "API 0/0, DB 0/0; windows API 0/0/0"
+    },
+    {
+      "phase": "zero runs (seed only)",
+      "name": "user1: dashboard \"Successful Runs\" / \"Failed Runs\" cards show the API values",
+      "pass": true,
+      "detail": "dashboard 0/0"
+    },
+    {
+      "phase": "zero runs (seed only)",
+      "name": "user1: seed demo runs in scope are excluded (API successful = all SUCCESS runs 1 - seed SUCCESS runs 1)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "phase": "zero runs (seed only)",
+      "name": "user1: database counts match what the API calls did (0 succeeded, 0 failed)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "phase": "zero runs (seed only)",
+      "name": "user2: API successful/failed (and 24h/7d/30d) equal the database (user2's runs only)",
+      "pass": true,
+      "detail": "API 0/0, DB 0/0; windows API 0/0/0"
+    },
+    {
+      "phase": "zero runs (seed only)",
+      "name": "user2: dashboard \"Successful Runs\" / \"Failed Runs\" cards show the API values",
+      "pass": true,
+      "detail": "dashboard 0/0"
+    },
+    {
+      "phase": "zero runs (seed only)",
+      "name": "user2: seed demo runs in scope are excluded (API successful = all SUCCESS runs 1 - seed SUCCESS runs 1)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "phase": "zero runs (seed only)",
+      "name": "user2: database counts match what the API calls did (0 succeeded, 0 failed)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "phase": "zero runs (seed only)",
+      "name": "user3: API successful/failed (and 24h/7d/30d) equal the database (user3's runs only)",
+      "pass": true,
+      "detail": "API 0/0, DB 0/0; windows API 0/0/0"
+    },
+    {
+      "phase": "zero runs (seed only)",
+      "name": "user3: dashboard \"Successful Runs\" / \"Failed Runs\" cards show the API values",
+      "pass": true,
+      "detail": "dashboard 0/0"
+    },
+    {
+      "phase": "zero runs (seed only)",
+      "name": "user3: seed demo runs in scope are excluded (API successful = all SUCCESS runs 1 - seed SUCCESS runs 1)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "phase": "zero runs (seed only)",
+      "name": "user3: database counts match what the API calls did (0 succeeded, 0 failed)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "phase": "create runs",
+      "name": "user1: cv success request -> HTTP 201",
+      "pass": true,
+      "detail": "HTTP 201"
+    },
+    {
+      "phase": "create runs",
+      "name": "user1: cv success request -> HTTP 201",
+      "pass": true,
+      "detail": "HTTP 201"
+    },
+    {
+      "phase": "create runs",
+      "name": "user1: sentiment success request -> HTTP 201",
+      "pass": true,
+      "detail": "HTTP 201"
+    },
+    {
+      "phase": "create runs",
+      "name": "user1: cv failure request -> HTTP 502",
+      "pass": true,
+      "detail": "HTTP 502"
+    },
+    {
+      "phase": "create runs",
+      "name": "user2: cv success request -> HTTP 201",
+      "pass": true,
+      "detail": "HTTP 201"
+    },
+    {
+      "phase": "create runs",
+      "name": "user2: cv success request -> HTTP 201",
+      "pass": true,
+      "detail": "HTTP 201"
+    },
+    {
+      "phase": "create runs",
+      "name": "user3: cv failure request -> HTTP 502",
+      "pass": true,
+      "detail": "HTTP 502"
+    },
+    {
+      "phase": "create runs",
+      "name": "user3: sentiment failure request -> HTTP 502",
+      "pass": true,
+      "detail": "HTTP 502"
+    },
+    {
+      "phase": "after mixed / all-success / all-failure runs",
+      "name": "admin: API successful/failed (and 24h/7d/30d) equal the database (all eligible runs)",
+      "pass": true,
+      "detail": "API 5/3, DB 5/3; windows API 8/8/8"
+    },
+    {
+      "phase": "after mixed / all-success / all-failure runs",
+      "name": "admin: dashboard \"Successful Runs\" / \"Failed Runs\" cards show the API values",
+      "pass": true,
+      "detail": "dashboard 5/3"
+    },
+    {
+      "phase": "after mixed / all-success / all-failure runs",
+      "name": "admin: seed demo runs in scope are excluded (API successful = all SUCCESS runs 8 - seed SUCCESS runs 3)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "phase": "after mixed / all-success / all-failure runs",
+      "name": "admin: database counts match what the API calls did (5 succeeded, 3 failed)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "phase": "after mixed / all-success / all-failure runs",
+      "name": "user1: API successful/failed (and 24h/7d/30d) equal the database (user1's runs only)",
+      "pass": true,
+      "detail": "API 3/1, DB 3/1; windows API 4/4/4"
+    },
+    {
+      "phase": "after mixed / all-success / all-failure runs",
+      "name": "user1: dashboard \"Successful Runs\" / \"Failed Runs\" cards show the API values",
+      "pass": true,
+      "detail": "dashboard 3/1"
+    },
+    {
+      "phase": "after mixed / all-success / all-failure runs",
+      "name": "user1: seed demo runs in scope are excluded (API successful = all SUCCESS runs 4 - seed SUCCESS runs 1)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "phase": "after mixed / all-success / all-failure runs",
+      "name": "user1: database counts match what the API calls did (3 succeeded, 1 failed)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "phase": "after mixed / all-success / all-failure runs",
+      "name": "user2: API successful/failed (and 24h/7d/30d) equal the database (user2's runs only)",
+      "pass": true,
+      "detail": "API 2/0, DB 2/0; windows API 2/2/2"
+    },
+    {
+      "phase": "after mixed / all-success / all-failure runs",
+      "name": "user2: dashboard \"Successful Runs\" / \"Failed Runs\" cards show the API values",
+      "pass": true,
+      "detail": "dashboard 2/0"
+    },
+    {
+      "phase": "after mixed / all-success / all-failure runs",
+      "name": "user2: seed demo runs in scope are excluded (API successful = all SUCCESS runs 3 - seed SUCCESS runs 1)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "phase": "after mixed / all-success / all-failure runs",
+      "name": "user2: database counts match what the API calls did (2 succeeded, 0 failed)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "phase": "after mixed / all-success / all-failure runs",
+      "name": "user3: API successful/failed (and 24h/7d/30d) equal the database (user3's runs only)",
+      "pass": true,
+      "detail": "API 0/2, DB 0/2; windows API 2/2/2"
+    },
+    {
+      "phase": "after mixed / all-success / all-failure runs",
+      "name": "user3: dashboard \"Successful Runs\" / \"Failed Runs\" cards show the API values",
+      "pass": true,
+      "detail": "dashboard 0/2"
+    },
+    {
+      "phase": "after mixed / all-success / all-failure runs",
+      "name": "user3: seed demo runs in scope are excluded (API successful = all SUCCESS runs 1 - seed SUCCESS runs 1)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "phase": "after mixed / all-success / all-failure runs",
+      "name": "user3: database counts match what the API calls did (0 succeeded, 2 failed)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "phase": "authorization",
+      "name": "user1: admin-only per-user analytics -> 403",
+      "pass": true,
+      "detail": "HTTP 403"
+    },
+    {
+      "phase": "authorization",
+      "name": "user2: admin-only per-user analytics -> 403",
+      "pass": true,
+      "detail": "HTTP 403"
+    },
+    {
+      "phase": "authorization",
+      "name": "user3: admin-only per-user analytics -> 403",
+      "pass": true,
+      "detail": "HTTP 403"
+    },
+    {
+      "phase": "authorization",
+      "name": "unauthenticated GET /api/analytics/runs -> 401",
+      "pass": true,
+      "detail": "HTTP 401"
+    }
+  ]
+}

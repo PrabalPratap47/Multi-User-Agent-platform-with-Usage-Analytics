@@ -1,0 +1,61 @@
+# Environment / secrets: every .env* file except the committed templates
+.env
+.env.*
+!.env.example
+!.env.*.example
+# Explicit: the backend's real secrets (OpenAI key, JWT secret) - never commit
+backend/.env.local
+*.pem
+*.key
+
+# Dependencies (package-lock.json is committed: npm is this project's package manager)
+node_modules/
+yarn.lock
+pnpm-lock.yaml
+
+# Build artifacts
+dist/
+build/
+out/
+.next/
+*.tsbuildinfo
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+coverage/
+.nyc_output/
+
+# Database (SQLite: backend/data/dev.db, backend/data/test.db, and any stray copy)
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+# Database backups (e.g. backend/data/dev.db.backup) hold real development data
+*.db.backup
+*.db.bak
+.prisma/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary
+tmp/
+temp/
+*.tmp

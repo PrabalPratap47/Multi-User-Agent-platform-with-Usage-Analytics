@@ -1,0 +1,97 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CVClassificationResponse",
+  "description": "Required response shape for the CV Classification Agent. Every model response is validated against this schema (via the equivalent Zod schema in schema.ts) before being trusted.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["primaryCategory", "secondaryCategories", "confidence", "rationale"],
+  "properties": {
+    "primaryCategory": {
+      "type": "string",
+      "enum": [
+        "PSS",
+        "DCS",
+        "Front-End Developer",
+        "Back-End Developer",
+        "Web Automation",
+        "Mobile Automation",
+        "AI Engineer",
+        "Chatbot Application Tester",
+        "Other"
+      ]
+    },
+    "secondaryCategories": {
+      "type": "array",
+      "maxItems": 9,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "PSS",
+          "DCS",
+          "Front-End Developer",
+          "Back-End Developer",
+          "Web Automation",
+          "Mobile Automation",
+          "AI Engineer",
+          "Chatbot Application Tester",
+          "Other"
+        ]
+      }
+    },
+    "confidence": {
+      "type": "object",
+      "description": "Every one of the 9 categories must be present, each scored 0 to 1. primaryCategory must hold the highest score.",
+      "additionalProperties": false,
+      "required": [
+        "PSS",
+        "DCS",
+        "Front-End Developer",
+        "Back-End Developer",
+        "Web Automation",
+        "Mobile Automation",
+        "AI Engineer",
+        "Chatbot Application Tester",
+        "Other"
+      ],
+      "properties": {
+        "PSS": { "type": "number", "minimum": 0, "maximum": 1 },
+        "DCS": { "type": "number", "minimum": 0, "maximum": 1 },
+        "Front-End Developer": { "type": "number", "minimum": 0, "maximum": 1 },
+        "Back-End Developer": { "type": "number", "minimum": 0, "maximum": 1 },
+        "Web Automation": { "type": "number", "minimum": 0, "maximum": 1 },
+        "Mobile Automation": { "type": "number", "minimum": 0, "maximum": 1 },
+        "AI Engineer": { "type": "number", "minimum": 0, "maximum": 1 },
+        "Chatbot Application Tester": { "type": "number", "minimum": 0, "maximum": 1 },
+        "Other": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "rationale": {
+      "type": "array",
+      "description": "At least one entry, including one for primaryCategory. Each entry's evidence must cite something specific from the CV text.",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["category", "evidence"],
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": [
+              "PSS",
+              "DCS",
+              "Front-End Developer",
+              "Back-End Developer",
+              "Web Automation",
+              "Mobile Automation",
+              "AI Engineer",
+              "Chatbot Application Tester",
+              "Other"
+            ]
+          },
+          "evidence": { "type": "string", "minLength": 1, "maxLength": 2000 }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,787 @@
+{
+  "overall": "PASS",
+  "generatedAt": "2026-10-09T04:46:56.974Z",
+  "keySource": "backend/.env.local",
+  "configuredModel": "gpt-4o",
+  "realOpenAICalls": 11,
+  "successfulRealOpenAICalls": 11,
+  "peakConcurrentProviderCalls": 3,
+  "rawTokens": {
+    "input": 9520,
+    "output": 1265
+  },
+  "totalEstimatedCostUsd": 0.036449999999999996,
+  "userStatus": {
+    "user1": "PASS",
+    "user2": "PASS",
+    "user3": "PASS"
+  },
+  "decisionConcurrency": "PASS",
+  "checks": {
+    "passed": 72,
+    "failed": 0
+  },
+  "concurrencyEvidence": {
+    "http": {
+      "user1": [
+        1791521211633,
+        1791521213077
+      ],
+      "user2": [
+        1791521211634,
+        1791521213875
+      ]
+    },
+    "provider": {
+      "user1": [
+        1791521211682,
+        1791521212971
+      ],
+      "user2": [
+        1791521211722,
+        1791521213800
+      ],
+      "peakConcurrentCalls": 2
+    },
+    "dbRuns": {
+      "user1": [
+        1791521211675,
+        1791521213056
+      ],
+      "user2": [
+        1791521211711,
+        1791521213859
+      ]
+    }
+  },
+  "cvRuns": [
+    {
+      "who": "user1",
+      "label": "Test 1 - user1",
+      "runId": "34982d26-3f6d-4ddb-8526-6c538aa364f2",
+      "category": "Back-End Developer",
+      "expected": "Back-End Developer",
+      "httpMs": 2199
+    },
+    {
+      "who": "user2",
+      "label": "Test 2 - user2",
+      "runId": "ee0ed32c-3adb-4472-8dc5-5c7adf78fd3c",
+      "category": "Front-End Developer",
+      "expected": "Front-End Developer",
+      "httpMs": 1741
+    },
+    {
+      "who": "user3",
+      "label": "Test 3 - user3",
+      "runId": "f7664d8f-6818-4ab5-ae81-ac9a1ddcabb4",
+      "category": "Web Automation",
+      "expected": "Web Automation",
+      "httpMs": 1920
+    },
+    {
+      "who": "user1",
+      "label": "Concurrency A",
+      "runId": "65f5c4fe-ca8d-43a3-aaf7-36105bcc7fe4",
+      "category": "AI Engineer",
+      "expected": "AI Engineer",
+      "httpMs": 1444
+    },
+    {
+      "who": "user2",
+      "label": "Concurrency A",
+      "runId": "5844ecb8-cbe6-4072-8a49-143c1e05e4ab",
+      "category": "Mobile Automation",
+      "expected": "Mobile Automation",
+      "httpMs": 2241
+    },
+    {
+      "who": "user2",
+      "label": "Concurrency B",
+      "runId": "84ba574f-a70f-4432-b100-b2ef524001ea",
+      "category": "Chatbot Application Tester",
+      "expected": "Chatbot Application Tester",
+      "httpMs": 1866
+    }
+  ],
+  "sentimentRuns": [
+    {
+      "who": "user1",
+      "label": "Test 1 - user1",
+      "runId": "e9c209a6-6151-4e43-9b72-49e321409d7e",
+      "sentiment": "POSITIVE",
+      "expected": "positive",
+      "httpMs": 1233
+    },
+    {
+      "who": "user2",
+      "label": "Test 2 - user2",
+      "runId": "597b0e24-95a3-4294-955f-7c011b6b10a4",
+      "sentiment": "NEGATIVE",
+      "expected": "negative",
+      "httpMs": 1297
+    },
+    {
+      "who": "user3",
+      "label": "Test 3 - user3",
+      "runId": "bb12e1e0-7553-4110-b40f-b2b10c7d26d7",
+      "sentiment": "NEUTRAL",
+      "expected": "neutral",
+      "httpMs": 1085
+    },
+    {
+      "who": "user1",
+      "label": "Concurrency B",
+      "runId": "a2437ffe-c1a7-48be-b985-a4f4a8d8ca5b",
+      "sentiment": "POSITIVE",
+      "expected": "positive",
+      "httpMs": 1716
+    },
+    {
+      "who": "user3",
+      "label": "Concurrency B",
+      "runId": "0903d346-84c1-4c62-9f7e-8d49b60f11c9",
+      "sentiment": "NEGATIVE",
+      "expected": "negative",
+      "httpMs": 1955
+    }
+  ],
+  "usage": [
+    {
+      "user": "user1",
+      "agent": "CV Classification Agent",
+      "runId": "34982d26-3f6d-4ddb-8526-6c538aa364f2",
+      "model": "gpt-4o-2024-08-06",
+      "rawInputTokens": 1092,
+      "loggedInputTokens": 1092,
+      "rawOutputTokens": 202,
+      "loggedOutputTokens": 202,
+      "totalTokens": 1294,
+      "latencyMs": 2059,
+      "status": "SUCCESS",
+      "estimatedCost": 0.004750000000000001,
+      "providerResponseIdStored": true,
+      "problems": []
+    },
+    {
+      "user": "user1",
+      "agent": "Sentiment Analysis Agent",
+      "runId": "e9c209a6-6151-4e43-9b72-49e321409d7e",
+      "model": "gpt-4o-2024-08-06",
+      "rawInputTokens": 604,
+      "loggedInputTokens": 604,
+      "rawOutputTokens": 54,
+      "loggedOutputTokens": 54,
+      "totalTokens": 658,
+      "latencyMs": 1149,
+      "status": "SUCCESS",
+      "estimatedCost": 0.00205,
+      "providerResponseIdStored": true,
+      "problems": []
+    },
+    {
+      "user": "user2",
+      "agent": "CV Classification Agent",
+      "runId": "ee0ed32c-3adb-4472-8dc5-5c7adf78fd3c",
+      "model": "gpt-4o-2024-08-06",
+      "rawInputTokens": 1087,
+      "loggedInputTokens": 1087,
+      "rawOutputTokens": 157,
+      "loggedOutputTokens": 157,
+      "totalTokens": 1244,
+      "latencyMs": 1638,
+      "status": "SUCCESS",
+      "estimatedCost": 0.004287500000000001,
+      "providerResponseIdStored": true,
+      "problems": []
+    },
+    {
+      "user": "user2",
+      "agent": "Sentiment Analysis Agent",
+      "runId": "597b0e24-95a3-4294-955f-7c011b6b10a4",
+      "model": "gpt-4o-2024-08-06",
+      "rawInputTokens": 602,
+      "loggedInputTokens": 602,
+      "rawOutputTokens": 62,
+      "loggedOutputTokens": 62,
+      "totalTokens": 664,
+      "latencyMs": 1236,
+      "status": "SUCCESS",
+      "estimatedCost": 0.002125,
+      "providerResponseIdStored": true,
+      "problems": []
+    },
+    {
+      "user": "user3",
+      "agent": "CV Classification Agent",
+      "runId": "f7664d8f-6818-4ab5-ae81-ac9a1ddcabb4",
+      "model": "gpt-4o-2024-08-06",
+      "rawInputTokens": 1085,
+      "loggedInputTokens": 1085,
+      "rawOutputTokens": 154,
+      "loggedOutputTokens": 154,
+      "totalTokens": 1239,
+      "latencyMs": 1775,
+      "status": "SUCCESS",
+      "estimatedCost": 0.0042525,
+      "providerResponseIdStored": true,
+      "problems": []
+    },
+    {
+      "user": "user3",
+      "agent": "Sentiment Analysis Agent",
+      "runId": "bb12e1e0-7553-4110-b40f-b2b10c7d26d7",
+      "model": "gpt-4o-2024-08-06",
+      "rawInputTokens": 606,
+      "loggedInputTokens": 606,
+      "rawOutputTokens": 52,
+      "loggedOutputTokens": 52,
+      "totalTokens": 658,
+      "latencyMs": 1007,
+      "status": "SUCCESS",
+      "estimatedCost": 0.002035,
+      "providerResponseIdStored": true,
+      "problems": []
+    },
+    {
+      "user": "user1",
+      "agent": "CV Classification Agent",
+      "runId": "65f5c4fe-ca8d-43a3-aaf7-36105bcc7fe4",
+      "model": "gpt-4o-2024-08-06",
+      "rawInputTokens": 1081,
+      "loggedInputTokens": 1081,
+      "rawOutputTokens": 153,
+      "loggedOutputTokens": 153,
+      "totalTokens": 1234,
+      "latencyMs": 1310,
+      "status": "SUCCESS",
+      "estimatedCost": 0.0042325,
+      "providerResponseIdStored": true,
+      "problems": []
+    },
+    {
+      "user": "user2",
+      "agent": "CV Classification Agent",
+      "runId": "5844ecb8-cbe6-4072-8a49-143c1e05e4ab",
+      "model": "gpt-4o-2024-08-06",
+      "rawInputTokens": 1083,
+      "loggedInputTokens": 1083,
+      "rawOutputTokens": 140,
+      "loggedOutputTokens": 140,
+      "totalTokens": 1223,
+      "latencyMs": 2080,
+      "status": "SUCCESS",
+      "estimatedCost": 0.0041075,
+      "providerResponseIdStored": true,
+      "problems": []
+    },
+    {
+      "user": "user1",
+      "agent": "Sentiment Analysis Agent",
+      "runId": "a2437ffe-c1a7-48be-b985-a4f4a8d8ca5b",
+      "model": "gpt-4o-2024-08-06",
+      "rawInputTokens": 601,
+      "loggedInputTokens": 601,
+      "rawOutputTokens": 50,
+      "loggedOutputTokens": 50,
+      "totalTokens": 651,
+      "latencyMs": 1211,
+      "status": "SUCCESS",
+      "estimatedCost": 0.0020025,
+      "providerResponseIdStored": true,
+      "problems": []
+    },
+    {
+      "user": "user2",
+      "agent": "CV Classification Agent",
+      "runId": "84ba574f-a70f-4432-b100-b2ef524001ea",
+      "model": "gpt-4o-2024-08-06",
+      "rawInputTokens": 1078,
+      "loggedInputTokens": 1078,
+      "rawOutputTokens": 182,
+      "loggedOutputTokens": 182,
+      "totalTokens": 1260,
+      "latencyMs": 1637,
+      "status": "SUCCESS",
+      "estimatedCost": 0.004515000000000001,
+      "providerResponseIdStored": true,
+      "problems": []
+    },
+    {
+      "user": "user3",
+      "agent": "Sentiment Analysis Agent",
+      "runId": "0903d346-84c1-4c62-9f7e-8d49b60f11c9",
+      "model": "gpt-4o-2024-08-06",
+      "rawInputTokens": 601,
+      "loggedInputTokens": 601,
+      "rawOutputTokens": 59,
+      "loggedOutputTokens": 59,
+      "totalTokens": 660,
+      "latencyMs": 1594,
+      "status": "SUCCESS",
+      "estimatedCost": 0.0020925,
+      "providerResponseIdStored": true,
+      "problems": []
+    }
+  ],
+  "perUser": [
+    {
+      "user": "user1",
+      "rawInputTokens": 3378,
+      "rawOutputTokens": 459,
+      "calls": 4,
+      "dashboardInputTokens": 3378,
+      "dashboardOutputTokens": 459
+    },
+    {
+      "user": "user2",
+      "rawInputTokens": 3850,
+      "rawOutputTokens": 541,
+      "calls": 4,
+      "dashboardInputTokens": 3850,
+      "dashboardOutputTokens": 541
+    },
+    {
+      "user": "user3",
+      "rawInputTokens": 2292,
+      "rawOutputTokens": 265,
+      "calls": 3,
+      "dashboardInputTokens": 2292,
+      "dashboardOutputTokens": 265
+    }
+  ],
+  "checksDetail": [
+    {
+      "section": "Login",
+      "name": "user1 logs in through POST /api/auth/login",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Login",
+      "name": "user1: identity comes from the session token",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Login",
+      "name": "user2 logs in through POST /api/auth/login",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Login",
+      "name": "user2: identity comes from the session token",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Login",
+      "name": "user3 logs in through POST /api/auth/login",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Login",
+      "name": "user3: identity comes from the session token",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Login",
+      "name": "admin logs in through POST /api/auth/login",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Login",
+      "name": "admin: identity comes from the session token",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Test 1 - user1",
+      "name": "user1: CV Classification Agent (real OpenAI) -> HTTP 201",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Test 1 - user1",
+      "name": "user1: result, CV document and run all belong to user1",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Test 1 - user1",
+      "name": "user1: the stored CV is user1's own text",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Test 1 - user1",
+      "name": "user1: the model's evidence is grounded in user1's own CV",
+      "pass": true,
+      "detail": "category Back-End Developer (expected Back-End Developer)"
+    },
+    {
+      "section": "Test 1 - user1",
+      "name": "user1: Sentiment Agent (real OpenAI) -> HTTP 201",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Test 1 - user1",
+      "name": "user1: sentiment result and run belong to user1",
+      "pass": true,
+      "detail": "sentiment POSITIVE (expected positive)"
+    },
+    {
+      "section": "Test 2 - user2",
+      "name": "user2: CV Classification Agent (real OpenAI) -> HTTP 201",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Test 2 - user2",
+      "name": "user2: result, CV document and run all belong to user2",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Test 2 - user2",
+      "name": "user2: the stored CV is user2's own text",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Test 2 - user2",
+      "name": "user2: the model's evidence is grounded in user2's own CV",
+      "pass": true,
+      "detail": "category Front-End Developer (expected Front-End Developer)"
+    },
+    {
+      "section": "Test 2 - user2",
+      "name": "user2: Sentiment Agent (real OpenAI) -> HTTP 201",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Test 2 - user2",
+      "name": "user2: sentiment result and run belong to user2",
+      "pass": true,
+      "detail": "sentiment NEGATIVE (expected negative)"
+    },
+    {
+      "section": "Test 3 - user3",
+      "name": "user3: CV Classification Agent (real OpenAI) -> HTTP 201",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Test 3 - user3",
+      "name": "user3: result, CV document and run all belong to user3",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Test 3 - user3",
+      "name": "user3: the stored CV is user3's own text",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Test 3 - user3",
+      "name": "user3: the model's evidence is grounded in user3's own CV",
+      "pass": true,
+      "detail": "category Web Automation (expected Web Automation)"
+    },
+    {
+      "section": "Test 3 - user3",
+      "name": "user3: Sentiment Agent (real OpenAI) -> HTTP 201",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Test 3 - user3",
+      "name": "user3: sentiment result and run belong to user3",
+      "pass": true,
+      "detail": "sentiment NEUTRAL (expected neutral)"
+    },
+    {
+      "section": "Concurrency A",
+      "name": "user1: CV Classification Agent (real OpenAI) -> HTTP 201",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Concurrency A",
+      "name": "user1: result, CV document and run all belong to user1",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Concurrency A",
+      "name": "user1: the stored CV is user1's own text",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Concurrency A",
+      "name": "user1: the model's evidence is grounded in user1's own CV",
+      "pass": true,
+      "detail": "category AI Engineer (expected AI Engineer)"
+    },
+    {
+      "section": "Concurrency A",
+      "name": "user2: CV Classification Agent (real OpenAI) -> HTTP 201",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Concurrency A",
+      "name": "user2: result, CV document and run all belong to user2",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Concurrency A",
+      "name": "user2: the stored CV is user2's own text",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Concurrency A",
+      "name": "user2: the model's evidence is grounded in user2's own CV",
+      "pass": true,
+      "detail": "category Mobile Automation (expected Mobile Automation)"
+    },
+    {
+      "section": "Concurrency A",
+      "name": "HTTP requests overlapped (user1 start < user2 end AND user2 start < user1 end)",
+      "pass": true,
+      "detail": "user1 1444 ms, user2 2241 ms"
+    },
+    {
+      "section": "Concurrency A",
+      "name": "real OpenAI calls overlapped",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Concurrency A",
+      "name": "peak concurrent OpenAI calls >= 2",
+      "pass": true,
+      "detail": "peak 2"
+    },
+    {
+      "section": "Concurrency A",
+      "name": "stored run start/complete intervals overlapped",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Concurrency A",
+      "name": "distinct run ids",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Concurrency B",
+      "name": "user1: Sentiment Agent (real OpenAI) -> HTTP 201",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Concurrency B",
+      "name": "user1: sentiment result and run belong to user1",
+      "pass": true,
+      "detail": "sentiment POSITIVE (expected positive)"
+    },
+    {
+      "section": "Concurrency B",
+      "name": "user2: CV Classification Agent (real OpenAI) -> HTTP 201",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Concurrency B",
+      "name": "user2: result, CV document and run all belong to user2",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Concurrency B",
+      "name": "user2: the stored CV is user2's own text",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Concurrency B",
+      "name": "user2: the model's evidence is grounded in user2's own CV",
+      "pass": true,
+      "detail": "category Chatbot Application Tester (expected Chatbot Application Tester)"
+    },
+    {
+      "section": "Concurrency B",
+      "name": "user3: Sentiment Agent (real OpenAI) -> HTTP 201",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Concurrency B",
+      "name": "user3: sentiment result and run belong to user3",
+      "pass": true,
+      "detail": "sentiment NEGATIVE (expected negative)"
+    },
+    {
+      "section": "Concurrency B",
+      "name": "three users and both agents overlapped",
+      "pass": true,
+      "detail": "peak 3"
+    },
+    {
+      "section": "Concurrency B",
+      "name": "peak concurrent OpenAI calls >= 2",
+      "pass": true,
+      "detail": "peak 3"
+    },
+    {
+      "section": "Decisions",
+      "name": "MODIFY and REJECT without a reason are rejected (400)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Decisions",
+      "name": "concurrent user1 MODIFY and user2 REJECT each attached to their own CV, run and user",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Decisions",
+      "name": "original recommendations unchanged",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Isolation",
+      "name": "user1 -> user2: CV result, decisions, decision submit, re-classify CV, sentiment, usage logs all denied",
+      "pass": true,
+      "detail": "403/403/403/403/403/403; OpenAI calls triggered: 0"
+    },
+    {
+      "section": "Isolation",
+      "name": "user2 -> user1: CV result, decisions, decision submit, re-classify CV, sentiment, usage logs all denied",
+      "pass": true,
+      "detail": "403/403/403/403/403/403; OpenAI calls triggered: 0"
+    },
+    {
+      "section": "Isolation",
+      "name": "user1 -> user3: CV result, decisions, decision submit, re-classify CV, sentiment, usage logs all denied",
+      "pass": true,
+      "detail": "403/403/403/403/403/403; OpenAI calls triggered: 0"
+    },
+    {
+      "section": "Isolation",
+      "name": "user2 -> user3: CV result, decisions, decision submit, re-classify CV, sentiment, usage logs all denied",
+      "pass": true,
+      "detail": "403/403/403/403/403/403; OpenAI calls triggered: 0"
+    },
+    {
+      "section": "Isolation",
+      "name": "user3 -> user1: CV result, decisions, decision submit, re-classify CV, sentiment, usage logs all denied",
+      "pass": true,
+      "detail": "403/403/403/403/403/403; OpenAI calls triggered: 0"
+    },
+    {
+      "section": "Isolation",
+      "name": "user3 -> user2: CV result, decisions, decision submit, re-classify CV, sentiment, usage logs all denied",
+      "pass": true,
+      "detail": "403/403/403/403/403/403; OpenAI calls triggered: 0"
+    },
+    {
+      "section": "Isolation",
+      "name": "user1's CV, sentiment and usage-log lists contain only user1's rows",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Isolation",
+      "name": "user1's dashboard summary equals user1's own real usage only",
+      "pass": true,
+      "detail": "3378 in / 459 out"
+    },
+    {
+      "section": "Isolation",
+      "name": "user2's CV, sentiment and usage-log lists contain only user2's rows",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Isolation",
+      "name": "user2's dashboard summary equals user2's own real usage only",
+      "pass": true,
+      "detail": "3850 in / 541 out"
+    },
+    {
+      "section": "Isolation",
+      "name": "user3's CV, sentiment and usage-log lists contain only user3's rows",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Isolation",
+      "name": "user3's dashboard summary equals user3's own real usage only",
+      "pass": true,
+      "detail": "2292 in / 265 out"
+    },
+    {
+      "section": "Usage logging",
+      "name": "every successful real OpenAI call has a matching usage log (user, agent, model, tokens, latency, status, cost, run, response id)",
+      "pass": true,
+      "detail": "11/11 rows exact"
+    },
+    {
+      "section": "Usage logging",
+      "name": "no usage log row without a real OpenAI response",
+      "pass": true,
+      "detail": "0 unmatched"
+    },
+    {
+      "section": "Usage logging",
+      "name": "no failed (non-200) OpenAI responses",
+      "pass": true,
+      "detail": "0 non-200"
+    },
+    {
+      "section": "Admin",
+      "name": "admin global summary = database totals = raw OpenAI usage totals",
+      "pass": true,
+      "detail": "input 9520 / output 1265"
+    },
+    {
+      "section": "Admin",
+      "name": "per-user breakdown lists all three users with their exact raw OpenAI token totals",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Admin",
+      "name": "per-agent breakdown matches raw OpenAI usage for both agents",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Admin",
+      "name": "admin sees all three users' CV and sentiment results",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "section": "Admin",
+      "name": "regular users are denied the admin per-user view (403)",
+      "pass": true,
+      "detail": ""
+    }
+  ]
+}

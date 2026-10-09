@@ -1,0 +1,48 @@
+[
+  {
+    "timestamp": "2026-01-15T10:30:00Z",
+    "userId": "legacy-user-882",
+    "agentName": "Legacy Screening Bot",
+    "model": "gpt-4o-mini",
+    "inputTokens": 512,
+    "outputTokens": 128,
+    "latencyMs": 940,
+    "status": "ok",
+    "estimatedCost": 0.0031
+  },
+  {
+    "timestamp": "2026-01-15T10:31:12Z",
+    "userId": "legacy-user-901",
+    "agentName": "Legacy Screening Bot",
+    "model": "gpt-4o-mini",
+    "inputTokens": 480,
+    "outputTokens": 110,
+    "latencyMs": 870,
+    "status": "success",
+    "estimatedCost": 0.0028
+  },
+  {
+    "timestamp": "2026-01-15T10:32:45Z",
+    "agentName": "Legacy Screening Bot",
+    "status": "failed",
+    "latencyMs": 2200
+  },
+  {
+    "timestamp": "2026-01-15T11:02:00Z",
+    "userId": "legacy-user-882",
+    "agentName": "Vendor Resume Parser",
+    "model": "claude-3-haiku",
+    "inputTokens": 300,
+    "outputTokens": 80,
+    "latencyMs": 610,
+    "status": "200",
+    "estimatedCost": 0.0018
+  },
+  {
+    "timestamp": "2026-01-15T11:05:30Z",
+    "agentName": "Vendor Resume Parser",
+    "model": "claude-3-haiku",
+    "status": "500",
+    "latencyMs": 15000
+  }
+]

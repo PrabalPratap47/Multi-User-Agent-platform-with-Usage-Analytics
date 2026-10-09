@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ExternalAgentLogRecord",
+  "description": "One record in an imported external agent log file (.json array element or .jsonl line). Only timestamp and agentName are required - a foreign agent's log format is never assumed to match this platform's own. Unrecognized extra fields are allowed and preserved verbatim, not rejected.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["timestamp", "agentName"],
+  "properties": {
+    "timestamp": {
+      "type": "string",
+      "description": "Any string parseable by JavaScript's Date constructor (ISO 8601 recommended, e.g. 2026-01-15T10:30:00Z)."
+    },
+    "userId": {
+      "type": ["string", "number"],
+      "description": "The external system's own user identifier, if available. Never assumed to correspond to this platform's internal user IDs - stored separately as externalUserId."
+    },
+    "agentName": {
+      "type": "string",
+      "description": "Name of the external agent that produced this record."
+    },
+    "model": {
+      "type": "string",
+      "description": "Optional - the model the external agent used, if reported."
+    },
+    "inputTokens": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Optional - the external system may not report token counts at all."
+    },
+    "outputTokens": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "latencyMs": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "status": {
+      "type": "string",
+      "description": "The external system's own status string, in whatever vocabulary it uses (e.g. 'ok', 'success', '200', 'failed', 'ERROR'). Normalized into a boolean isError by a documented heuristic - see docs/EXTERNAL_LOG_FORMAT.md."
+    },
+    "estimatedCost": {
+      "type": "number",
+      "minimum": 0
+    }
+  }
+}

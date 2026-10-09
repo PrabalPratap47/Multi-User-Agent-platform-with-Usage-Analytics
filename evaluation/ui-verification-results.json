@@ -1,0 +1,458 @@
+{
+  "overall": "PASS",
+  "generatedAt": "2026-10-09T19:03:05.008Z",
+  "provider": "CONTROLLED (no OpenAI calls)",
+  "browser": "Google Chrome (headless, via playwright-core)",
+  "viewports": {
+    "desktop": {
+      "width": 1440,
+      "height": 900
+    },
+    "tablet": {
+      "width": 820,
+      "height": 1180
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844
+    },
+    "narrow": {
+      "width": 320,
+      "height": 640
+    }
+  },
+  "checks": [
+    {
+      "area": "Login",
+      "name": "desktop: a failed login shows the server's message in an alert",
+      "pass": true,
+      "detail": "\"Invalid email or password\""
+    },
+    {
+      "area": "Layout",
+      "name": "desktop login page: no horizontal scroll, every control named, text contrast AA",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0 "
+    },
+    {
+      "area": "Roles",
+      "name": "admin: dashboard tabs match the role",
+      "pass": true,
+      "detail": "ANALYTICS, MY RECORDS, AGENT RUNS, CV PROCESSING, SENTIMENT, EXTERNAL LOGS, ADMIN USERS"
+    },
+    {
+      "area": "Layout",
+      "name": "desktop admin ANALYTICS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "desktop admin MY RECORDS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "desktop admin AGENT RUNS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "desktop admin CV PROCESSING: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "desktop admin SENTIMENT: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "desktop admin EXTERNAL LOGS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "desktop admin ADMIN USERS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Keyboard",
+      "name": "admin desktop: every focus stop in the first 30 Tab presses has a visible focus indicator",
+      "pass": true,
+      "detail": "27 stops; without indicator: none"
+    },
+    {
+      "area": "Roles",
+      "name": "user1: dashboard tabs match the role",
+      "pass": true,
+      "detail": "ANALYTICS, MY RECORDS, AGENT RUNS, CV PROCESSING, SENTIMENT, EXTERNAL LOGS"
+    },
+    {
+      "area": "Layout",
+      "name": "desktop user1 ANALYTICS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "desktop user1 MY RECORDS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "desktop user1 AGENT RUNS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "desktop user1 CV PROCESSING: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "desktop user1 SENTIMENT: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "desktop user1 EXTERNAL LOGS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Login",
+      "name": "tablet: a failed login shows the server's message in an alert",
+      "pass": true,
+      "detail": "\"Invalid email or password\""
+    },
+    {
+      "area": "Layout",
+      "name": "tablet login page: no horizontal scroll, every control named, text contrast AA",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0 "
+    },
+    {
+      "area": "Layout",
+      "name": "tablet admin ANALYTICS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "tablet admin MY RECORDS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "tablet admin AGENT RUNS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "tablet admin CV PROCESSING: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "tablet admin SENTIMENT: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "tablet admin EXTERNAL LOGS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "tablet admin ADMIN USERS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "tablet user1 ANALYTICS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "tablet user1 MY RECORDS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "tablet user1 AGENT RUNS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "tablet user1 CV PROCESSING: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "tablet user1 SENTIMENT: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "tablet user1 EXTERNAL LOGS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Login",
+      "name": "mobile: a failed login shows the server's message in an alert",
+      "pass": true,
+      "detail": "\"Invalid email or password\""
+    },
+    {
+      "area": "Layout",
+      "name": "mobile login page: no horizontal scroll, every control named, text contrast AA",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0 "
+    },
+    {
+      "area": "Layout",
+      "name": "mobile admin ANALYTICS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "mobile admin MY RECORDS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "mobile admin AGENT RUNS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "mobile admin CV PROCESSING: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "mobile admin SENTIMENT: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "mobile admin EXTERNAL LOGS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "mobile admin ADMIN USERS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "mobile user1 ANALYTICS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "mobile user1 MY RECORDS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "mobile user1 AGENT RUNS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "mobile user1 CV PROCESSING: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "mobile user1 SENTIMENT: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "mobile user1 EXTERNAL LOGS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Login",
+      "name": "narrow: a failed login shows the server's message in an alert",
+      "pass": true,
+      "detail": "\"Invalid email or password\""
+    },
+    {
+      "area": "Layout",
+      "name": "narrow login page: no horizontal scroll, every control named, text contrast AA",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0 "
+    },
+    {
+      "area": "Layout",
+      "name": "narrow admin ANALYTICS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "narrow admin MY RECORDS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "narrow admin AGENT RUNS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "narrow admin CV PROCESSING: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "narrow admin SENTIMENT: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "narrow admin EXTERNAL LOGS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "narrow admin ADMIN USERS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "narrow user1 ANALYTICS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "narrow user1 MY RECORDS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "narrow user1 AGENT RUNS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "narrow user1 CV PROCESSING: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "narrow user1 SENTIMENT: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "narrow user1 EXTERNAL LOGS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "mobile: the usage-records table is a named, focusable scroll region with a visible hint, and the keyboard scrolls it",
+      "pass": true,
+      "detail": "region true, hint 1, scrolled 320px"
+    },
+    {
+      "area": "Dashboard",
+      "name": "Successful / Failed Runs cards show the API values",
+      "pass": true,
+      "detail": "dashboard 3/1, API 3/1"
+    },
+    {
+      "area": "CV",
+      "name": "a CV uploaded through the UI is classified and shows its category, confidence and evidence",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "area": "CV",
+      "name": "the decision form states that Modify and Reject require a reason before anything is chosen",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "area": "CV",
+      "name": "REJECT without a reason is refused in the UI, and the error is linked to the reason field",
+      "pass": true,
+      "detail": "aria-describedby=decision-5-reason-error"
+    },
+    {
+      "area": "CV",
+      "name": "the REJECT decision with its reason is stored (API)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "area": "Batch",
+      "name": "a partial batch failure is reported as such, with a Failed badge and the reason next to the failed file",
+      "pass": true,
+      "detail": "Batch processing / 2 of 2 finished / 100% /  / Queued 0 · Processing 0 · Completed 1 · Failed 1 / "
+    },
+    {
+      "area": "Sentiment",
+      "name": "the sentiment result shown matches the stored result (API)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "area": "Login",
+      "name": "logout returns to the login form, clears the stored session and stays logged out after reload",
+      "pass": true,
+      "detail": ""
+    }
+  ]
+}

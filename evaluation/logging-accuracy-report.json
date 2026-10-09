@@ -1,0 +1,269 @@
+{
+  "executed": true,
+  "overall": "PASS",
+  "generatedAt": "2026-10-09T04:47:22.706Z",
+  "provider": "openai",
+  "configuredModel": "gpt-4o",
+  "auditUser": "logging-audit-1791521232984@audit.local",
+  "dashboardEndpoint": "GET /api/analytics/summary",
+  "dashboard": {
+    "totalInputTokens": 4971,
+    "totalOutputTokens": 583,
+    "totalTokens": 5554,
+    "estimatedCost": 0.0182575,
+    "callCount": 6
+  },
+  "samples": [
+    {
+      "agent": "CV Classification Agent",
+      "sample": 1,
+      "ok": true,
+      "runId": "60a5e5f5-af8b-47ac-aeb2-520aba51a543",
+      "error": null
+    },
+    {
+      "agent": "CV Classification Agent",
+      "sample": 2,
+      "ok": true,
+      "runId": "6efa5e54-d4ad-484d-b4aa-b345a74ff7e3",
+      "error": null
+    },
+    {
+      "agent": "CV Classification Agent",
+      "sample": 3,
+      "ok": true,
+      "runId": "7936ab61-6248-4fde-b29e-6aaae9fce2aa",
+      "error": null
+    },
+    {
+      "agent": "Sentiment Analysis Agent",
+      "sample": 1,
+      "ok": true,
+      "runId": "4caccbff-711c-4217-aa8d-6fd36892ade5",
+      "error": null
+    },
+    {
+      "agent": "Sentiment Analysis Agent",
+      "sample": 2,
+      "ok": true,
+      "runId": "b1bce3d3-b293-449e-afdd-3e0ff25ec4e6",
+      "error": null
+    },
+    {
+      "agent": "Sentiment Analysis Agent",
+      "sample": 3,
+      "ok": true,
+      "runId": "a9c6737a-800d-448c-a7bd-2135f9a3f55f",
+      "error": null
+    }
+  ],
+  "calls": [
+    {
+      "runId": "60a5e5f5-af8b-47ac-aeb2-520aba51a543",
+      "agent": "CV Classification Agent",
+      "providerResponseId": "chatcmpl-EWwni6w76dAGX3mvbh5uipAr2jyQD",
+      "rawModel": "gpt-4o-2024-08-06",
+      "loggedModel": "gpt-4o-2024-08-06",
+      "rawInputTokens": 1065,
+      "loggedInputTokens": 1065,
+      "inputDifference": 0,
+      "rawOutputTokens": 142,
+      "loggedOutputTokens": 142,
+      "outputDifference": 0,
+      "expectedStatus": "SUCCESS",
+      "loggedStatus": "SUCCESS",
+      "pass": true,
+      "problems": [],
+      "rawUsage": {
+        "prompt_tokens": 1065,
+        "completion_tokens": 142,
+        "total_tokens": 1207,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "audio_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "audio_tokens": 0,
+          "accepted_prediction_tokens": 0,
+          "rejected_prediction_tokens": 0
+        }
+      }
+    },
+    {
+      "runId": "6efa5e54-d4ad-484d-b4aa-b345a74ff7e3",
+      "agent": "CV Classification Agent",
+      "providerResponseId": "chatcmpl-EWwnk1ZlcH04jtyHXpBhg4uQDlVcs",
+      "rawModel": "gpt-4o-2024-08-06",
+      "loggedModel": "gpt-4o-2024-08-06",
+      "rawInputTokens": 1060,
+      "loggedInputTokens": 1060,
+      "inputDifference": 0,
+      "rawOutputTokens": 145,
+      "loggedOutputTokens": 145,
+      "outputDifference": 0,
+      "expectedStatus": "SUCCESS",
+      "loggedStatus": "SUCCESS",
+      "pass": true,
+      "problems": [],
+      "rawUsage": {
+        "prompt_tokens": 1060,
+        "completion_tokens": 145,
+        "total_tokens": 1205,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "audio_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "audio_tokens": 0,
+          "accepted_prediction_tokens": 0,
+          "rejected_prediction_tokens": 0
+        }
+      }
+    },
+    {
+      "runId": "7936ab61-6248-4fde-b29e-6aaae9fce2aa",
+      "agent": "CV Classification Agent",
+      "providerResponseId": "chatcmpl-EWwnlPbGBBM7CifZrsvhvb3DJnudQ",
+      "rawModel": "gpt-4o-2024-08-06",
+      "loggedModel": "gpt-4o-2024-08-06",
+      "rawInputTokens": 1063,
+      "loggedInputTokens": 1063,
+      "inputDifference": 0,
+      "rawOutputTokens": 141,
+      "loggedOutputTokens": 141,
+      "outputDifference": 0,
+      "expectedStatus": "SUCCESS",
+      "loggedStatus": "SUCCESS",
+      "pass": true,
+      "problems": [],
+      "rawUsage": {
+        "prompt_tokens": 1063,
+        "completion_tokens": 141,
+        "total_tokens": 1204,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "audio_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "audio_tokens": 0,
+          "accepted_prediction_tokens": 0,
+          "rejected_prediction_tokens": 0
+        }
+      }
+    },
+    {
+      "runId": "4caccbff-711c-4217-aa8d-6fd36892ade5",
+      "agent": "Sentiment Analysis Agent",
+      "providerResponseId": "chatcmpl-EWwnnSxwFFDerko5xMHXrF2HTlkGR",
+      "rawModel": "gpt-4o-2024-08-06",
+      "loggedModel": "gpt-4o-2024-08-06",
+      "rawInputTokens": 595,
+      "loggedInputTokens": 595,
+      "inputDifference": 0,
+      "rawOutputTokens": 51,
+      "loggedOutputTokens": 51,
+      "outputDifference": 0,
+      "expectedStatus": "SUCCESS",
+      "loggedStatus": "SUCCESS",
+      "pass": true,
+      "problems": [],
+      "rawUsage": {
+        "prompt_tokens": 595,
+        "completion_tokens": 51,
+        "total_tokens": 646,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "audio_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "audio_tokens": 0,
+          "accepted_prediction_tokens": 0,
+          "rejected_prediction_tokens": 0
+        }
+      }
+    },
+    {
+      "runId": "b1bce3d3-b293-449e-afdd-3e0ff25ec4e6",
+      "agent": "Sentiment Analysis Agent",
+      "providerResponseId": "chatcmpl-EWwnoU51OHy9QYapeefhFeV4yMTAz",
+      "rawModel": "gpt-4o-2024-08-06",
+      "loggedModel": "gpt-4o-2024-08-06",
+      "rawInputTokens": 594,
+      "loggedInputTokens": 594,
+      "inputDifference": 0,
+      "rawOutputTokens": 55,
+      "loggedOutputTokens": 55,
+      "outputDifference": 0,
+      "expectedStatus": "SUCCESS",
+      "loggedStatus": "SUCCESS",
+      "pass": true,
+      "problems": [],
+      "rawUsage": {
+        "prompt_tokens": 594,
+        "completion_tokens": 55,
+        "total_tokens": 649,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "audio_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "audio_tokens": 0,
+          "accepted_prediction_tokens": 0,
+          "rejected_prediction_tokens": 0
+        }
+      }
+    },
+    {
+      "runId": "a9c6737a-800d-448c-a7bd-2135f9a3f55f",
+      "agent": "Sentiment Analysis Agent",
+      "providerResponseId": "chatcmpl-EWwnp1aoqIuVyHn8gglocm0bZ5n2F",
+      "rawModel": "gpt-4o-2024-08-06",
+      "loggedModel": "gpt-4o-2024-08-06",
+      "rawInputTokens": 594,
+      "loggedInputTokens": 594,
+      "inputDifference": 0,
+      "rawOutputTokens": 49,
+      "loggedOutputTokens": 49,
+      "outputDifference": 0,
+      "expectedStatus": "SUCCESS",
+      "loggedStatus": "SUCCESS",
+      "pass": true,
+      "problems": [],
+      "rawUsage": {
+        "prompt_tokens": 594,
+        "completion_tokens": 49,
+        "total_tokens": 643,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "audio_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "audio_tokens": 0,
+          "accepted_prediction_tokens": 0,
+          "rejected_prediction_tokens": 0
+        }
+      }
+    }
+  ],
+  "unmatchedLoggedRows": [],
+  "totals": {
+    "rawInputTotal": 4971,
+    "loggedInputTotal": 4971,
+    "dashboardInputTotal": 4971,
+    "rawOutputTotal": 583,
+    "loggedOutputTotal": 583,
+    "dashboardOutputTotal": 583,
+    "inputDifference": 0,
+    "outputDifference": 0,
+    "dashboardInputDifference": 0,
+    "dashboardOutputDifference": 0,
+    "pass": true
+  },
+  "nonSuccessHttpResponses": []
+}

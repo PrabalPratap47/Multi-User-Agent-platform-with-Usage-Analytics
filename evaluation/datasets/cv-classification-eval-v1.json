@@ -1,0 +1,174 @@
+{
+  "datasetVersion": "v1",
+  "description": "Labeled CV classification evaluation dataset. 3 samples per category (27 total), hand-written to be representative but not exhaustive. Secondary-category ground truth is provided only where a genuine overlap is plausible (see 'secondaryCategoryNote' on those samples) - most samples have an empty secondaryCategories array, which is itself a valid ground-truth label (no secondary category applies).",
+  "categories": [
+    "PSS", "DCS", "Front-End Developer", "Back-End Developer", "Web Automation",
+    "Mobile Automation", "AI Engineer", "Chatbot Application Tester", "Other"
+  ],
+  "samples": [
+    {
+      "sampleId": "EVAL-PSS-01",
+      "groundTruthPrimaryCategory": "PSS",
+      "groundTruthSecondaryCategories": [],
+      "cvText": "Maria Santos - 6 years implementing airline PSS integrations, building reservation and ticketing modules for a major GDS provider. Led migration of an inventory management system handling 2M+ bookings/year. Deep expertise in fare rules, PNR management, and interline ticketing protocols."
+    },
+    {
+      "sampleId": "EVAL-PSS-02",
+      "groundTruthPrimaryCategory": "PSS",
+      "groundTruthSecondaryCategories": [],
+      "cvText": "James Okafor - Systems analyst specializing in airline reservation systems for 4 years. Configured and maintained PSS platforms (Amadeus Altea), managing seat inventory allocation and fare class controls across 40+ routes."
+    },
+    {
+      "sampleId": "EVAL-PSS-03",
+      "groundTruthPrimaryCategory": "PSS",
+      "groundTruthSecondaryCategories": [],
+      "cvText": "Elena Petrova - 3 years as a PSS support engineer, resolving ticketing and reservation issues for a regional carrier. Experience with inventory control, overbooking algorithms, and GDS message formats (EDIFACT, Type A/B)."
+    },
+    {
+      "sampleId": "EVAL-DCS-01",
+      "groundTruthPrimaryCategory": "DCS",
+      "groundTruthSecondaryCategories": [],
+      "cvText": "Tom Richardson - 5 years building departure control systems for airport ground operations. Developed check-in kiosk integrations and boarding gate software processing 15,000 passengers/day. Expert in load control calculations and weight-and-balance systems."
+    },
+    {
+      "sampleId": "EVAL-DCS-02",
+      "groundTruthPrimaryCategory": "DCS",
+      "groundTruthSecondaryCategories": [],
+      "cvText": "Aisha Bello - DCS engineer with 4 years experience in check-in and boarding systems. Built real-time load control dashboards for ramp agents, integrating with SITA and ARINC messaging standards."
+    },
+    {
+      "sampleId": "EVAL-DCS-03",
+      "groundTruthPrimaryCategory": "DCS",
+      "groundTruthSecondaryCategories": [],
+      "cvText": "Carlos Mendez - 2 years maintaining airport departure control software, focused on boarding pass validation and gate management systems. Supported load control teams during irregular operations."
+    },
+    {
+      "sampleId": "EVAL-FE-01",
+      "groundTruthPrimaryCategory": "Front-End Developer",
+      "groundTruthSecondaryCategories": [],
+      "cvText": "Priya Sharma - 5 years building responsive web applications with React and Next.js. Led the migration of a legacy jQuery dashboard to a modern React + Tailwind CSS architecture using Vite for build tooling. Strong Git workflow experience with trunk-based development."
+    },
+    {
+      "sampleId": "EVAL-FE-02",
+      "groundTruthPrimaryCategory": "Front-End Developer",
+      "groundTruthSecondaryCategories": [],
+      "cvText": "Lucas Fernandez - Front-end engineer, 3 years with Angular and Ionic building cross-platform mobile-web hybrid apps. Implemented TanStack Query for efficient data fetching and caching across a 50-screen application."
+    },
+    {
+      "sampleId": "EVAL-FE-03",
+      "groundTruthPrimaryCategory": "Front-End Developer",
+      "groundTruthSecondaryCategories": [],
+      "cvText": "Nadia Hassan - 4 years as a UI developer specializing in React component libraries. Built a design system used across 8 products, with extensive Tailwind CSS theming and a Vite-based micro-frontend architecture."
+    },
+    {
+      "sampleId": "EVAL-BE-01",
+      "groundTruthPrimaryCategory": "Back-End Developer",
+      "groundTruthSecondaryCategories": [],
+      "cvText": "David Kim - 6 years building backend services with Node.js and Express, migrating to NestJS for a microservices architecture. Designed REST and GraphQL APIs handling 50k requests/minute. Experience with PostgreSQL and Redis caching."
+    },
+    {
+      "sampleId": "EVAL-BE-02",
+      "groundTruthPrimaryCategory": "Back-End Developer",
+      "groundTruthSecondaryCategories": [],
+      "cvText": "Fatima Al-Rashid - Python backend engineer, 4 years with Django and FastAPI building data processing pipelines. Implemented async task queues with Celery and optimized database queries, reducing API latency by 40%."
+    },
+    {
+      "sampleId": "EVAL-BE-03",
+      "groundTruthPrimaryCategory": "Back-End Developer",
+      "groundTruthSecondaryCategories": [],
+      "cvText": "Robert Chen - 5 years of Java/Kotlin backend development with Spring Boot. Built financial transaction processing services with strict ACID guarantees, handling regulatory compliance reporting."
+    },
+    {
+      "sampleId": "EVAL-WA-01",
+      "groundTruthPrimaryCategory": "Web Automation",
+      "groundTruthSecondaryCategories": [],
+      "cvText": "Sophie Laurent - 4 years as a QA automation engineer specializing in Selenium WebDriver and Cypress. Built a test suite of 800+ end-to-end tests for an e-commerce platform, reducing manual regression testing time by 70%."
+    },
+    {
+      "sampleId": "EVAL-WA-02",
+      "groundTruthPrimaryCategory": "Web Automation",
+      "groundTruthSecondaryCategories": [],
+      "cvText": "Ahmed Farouk - Web test automation specialist, 3 years with Playwright. Designed a cross-browser testing framework integrated into CI/CD, catching UI regressions before production deployment."
+    },
+    {
+      "sampleId": "EVAL-WA-03",
+      "groundTruthPrimaryCategory": "Web Automation",
+      "groundTruthSecondaryCategories": [],
+      "cvText": "Grace Mwangi - 5 years building Selenium-based automated test suites for banking web applications, including page object model architecture and parallel test execution across Chrome, Firefox, and Safari."
+    },
+    {
+      "sampleId": "EVAL-MA-01",
+      "groundTruthPrimaryCategory": "Mobile Automation",
+      "groundTruthSecondaryCategories": [],
+      "cvText": "Hiroshi Tanaka - 4 years as a mobile test automation engineer using Appium for cross-platform iOS/Android testing. Built automated regression suites for a ride-sharing app, covering 200+ test scenarios."
+    },
+    {
+      "sampleId": "EVAL-MA-02",
+      "groundTruthPrimaryCategory": "Mobile Automation",
+      "groundTruthSecondaryCategories": [],
+      "cvText": "Isabella Rossi - 3 years specializing in native mobile test automation with Espresso (Android) and XCUITest (iOS). Reduced release-cycle testing time from 5 days to 8 hours through full automation."
+    },
+    {
+      "sampleId": "EVAL-MA-03",
+      "groundTruthPrimaryCategory": "Mobile Automation",
+      "groundTruthSecondaryCategories": [],
+      "cvText": "Kwame Asante - Mobile QA automation engineer, 5 years of experience with Appium and device farm integration, testing banking apps across 30+ physical devices."
+    },
+    {
+      "sampleId": "EVAL-AI-01",
+      "groundTruthPrimaryCategory": "AI Engineer",
+      "groundTruthSecondaryCategories": ["Back-End Developer"],
+      "secondaryCategoryNote": "Deploying production RAG pipelines/agents typically involves building the backend API surface around them - a plausible genuine overlap, not a forced one.",
+      "cvText": "Daniel Novak - 3 years building RAG pipelines and fine-tuning LLMs for enterprise document search. Deployed production AI agents handling 10k queries/day, including the backend API services and vector database retrieval layer (Pinecone) they run on."
+    },
+    {
+      "sampleId": "EVAL-AI-02",
+      "groundTruthPrimaryCategory": "AI Engineer",
+      "groundTruthSecondaryCategories": [],
+      "cvText": "Yuki Yamamoto - Machine learning engineer, 4 years of experience fine-tuning transformer models and building multi-agent LLM orchestration systems. Deployed models to production using Docker and Kubernetes with monitoring for drift detection."
+    },
+    {
+      "sampleId": "EVAL-AI-03",
+      "groundTruthPrimaryCategory": "AI Engineer",
+      "groundTruthSecondaryCategories": [],
+      "cvText": "Omar Siddiqui - 2 years as an AI engineer building retrieval-augmented generation systems and prompt-engineering pipelines for customer support automation, including agent tool-use and function calling."
+    },
+    {
+      "sampleId": "EVAL-CB-01",
+      "groundTruthPrimaryCategory": "Chatbot Application Tester",
+      "groundTruthSecondaryCategories": ["AI Engineer"],
+      "secondaryCategoryNote": "Building automated LLM-output-quality evaluation frameworks sits close to AI engineering work, not just testing - a plausible genuine overlap.",
+      "cvText": "Rachel Green - 3 years testing conversational AI applications, specializing in intent coverage analysis and dialogue flow validation. Built automated evaluation frameworks measuring LLM output quality against golden response sets."
+    },
+    {
+      "sampleId": "EVAL-CB-02",
+      "groundTruthPrimaryCategory": "Chatbot Application Tester",
+      "groundTruthSecondaryCategories": [],
+      "cvText": "Mohammed Iqbal - Chatbot QA engineer, 4 years of experience testing multi-turn conversation flows and validating NLU intent classification accuracy for a customer service bot handling 1M+ conversations/month."
+    },
+    {
+      "sampleId": "EVAL-CB-03",
+      "groundTruthPrimaryCategory": "Chatbot Application Tester",
+      "groundTruthSecondaryCategories": [],
+      "cvText": "Linda Park - 2 years evaluating conversational application quality, including adversarial testing for prompt injection resistance and systematic dialogue-flow regression testing."
+    },
+    {
+      "sampleId": "EVAL-OTH-01",
+      "groundTruthPrimaryCategory": "Other",
+      "groundTruthSecondaryCategories": [],
+      "cvText": "Jennifer Adams - 5 years as a marketing coordinator managing social media campaigns and email newsletters. Experience with Adobe Creative Suite and campaign analytics reporting."
+    },
+    {
+      "sampleId": "EVAL-OTH-02",
+      "groundTruthPrimaryCategory": "Other",
+      "groundTruthSecondaryCategories": [],
+      "cvText": "Michael Torres - Warehouse operations manager, 6 years overseeing logistics and inventory for a retail distribution center. Strong background in supply chain coordination and team leadership."
+    },
+    {
+      "sampleId": "EVAL-OTH-03",
+      "groundTruthPrimaryCategory": "Other",
+      "groundTruthSecondaryCategories": [],
+      "cvText": "Sarah Johnson - Registered nurse with 8 years of clinical experience in emergency medicine, patient care coordination, and medical documentation."
+    }
+  ]
+}

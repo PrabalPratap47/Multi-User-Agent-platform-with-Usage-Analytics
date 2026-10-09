@@ -1,0 +1,409 @@
+{
+  "executed": true,
+  "datasetVersion": "v1",
+  "datasetPath": "evaluation/datasets/cv-classification-eval-v1.json",
+  "modelUsed": "gpt-4o",
+  "agentVersion": "1.0.0",
+  "runByUserEmail": "admin@example.com",
+  "startedAt": "2026-10-09T04:39:38.297Z",
+  "completedAt": "2026-10-09T04:40:17.716Z",
+  "totalSamples": 27,
+  "samples": [
+    {
+      "sampleId": "EVAL-PSS-01",
+      "groundTruthPrimaryCategory": "PSS",
+      "groundTruthSecondaryCategories": [],
+      "predictedPrimaryCategory": "PSS",
+      "predictedSecondaryCategories": [],
+      "confidence": 1,
+      "latencyMs": 1709,
+      "status": "SUCCESS"
+    },
+    {
+      "sampleId": "EVAL-PSS-02",
+      "groundTruthPrimaryCategory": "PSS",
+      "groundTruthSecondaryCategories": [],
+      "predictedPrimaryCategory": "PSS",
+      "predictedSecondaryCategories": [],
+      "confidence": 1,
+      "latencyMs": 1207,
+      "status": "SUCCESS"
+    },
+    {
+      "sampleId": "EVAL-PSS-03",
+      "groundTruthPrimaryCategory": "PSS",
+      "groundTruthSecondaryCategories": [],
+      "predictedPrimaryCategory": "PSS",
+      "predictedSecondaryCategories": [],
+      "confidence": 1,
+      "latencyMs": 1850,
+      "status": "SUCCESS"
+    },
+    {
+      "sampleId": "EVAL-DCS-01",
+      "groundTruthPrimaryCategory": "DCS",
+      "groundTruthSecondaryCategories": [],
+      "predictedPrimaryCategory": "DCS",
+      "predictedSecondaryCategories": [],
+      "confidence": 1,
+      "latencyMs": 1184,
+      "status": "SUCCESS"
+    },
+    {
+      "sampleId": "EVAL-DCS-02",
+      "groundTruthPrimaryCategory": "DCS",
+      "groundTruthSecondaryCategories": [],
+      "predictedPrimaryCategory": "DCS",
+      "predictedSecondaryCategories": [],
+      "confidence": 1,
+      "latencyMs": 1803,
+      "status": "SUCCESS"
+    },
+    {
+      "sampleId": "EVAL-DCS-03",
+      "groundTruthPrimaryCategory": "DCS",
+      "groundTruthSecondaryCategories": [],
+      "predictedPrimaryCategory": "DCS",
+      "predictedSecondaryCategories": [],
+      "confidence": 0.9,
+      "latencyMs": 1580,
+      "status": "SUCCESS"
+    },
+    {
+      "sampleId": "EVAL-FE-01",
+      "groundTruthPrimaryCategory": "Front-End Developer",
+      "groundTruthSecondaryCategories": [],
+      "predictedPrimaryCategory": "Front-End Developer",
+      "predictedSecondaryCategories": [],
+      "confidence": 1,
+      "latencyMs": 1212,
+      "status": "SUCCESS"
+    },
+    {
+      "sampleId": "EVAL-FE-02",
+      "groundTruthPrimaryCategory": "Front-End Developer",
+      "groundTruthSecondaryCategories": [],
+      "predictedPrimaryCategory": "Front-End Developer",
+      "predictedSecondaryCategories": [],
+      "confidence": 0.95,
+      "latencyMs": 1297,
+      "status": "SUCCESS"
+    },
+    {
+      "sampleId": "EVAL-FE-03",
+      "groundTruthPrimaryCategory": "Front-End Developer",
+      "groundTruthSecondaryCategories": [],
+      "predictedPrimaryCategory": "Front-End Developer",
+      "predictedSecondaryCategories": [],
+      "confidence": 0.95,
+      "latencyMs": 1108,
+      "status": "SUCCESS"
+    },
+    {
+      "sampleId": "EVAL-BE-01",
+      "groundTruthPrimaryCategory": "Back-End Developer",
+      "groundTruthSecondaryCategories": [],
+      "predictedPrimaryCategory": "Back-End Developer",
+      "predictedSecondaryCategories": [],
+      "confidence": 0.95,
+      "latencyMs": 1243,
+      "status": "SUCCESS"
+    },
+    {
+      "sampleId": "EVAL-BE-02",
+      "groundTruthPrimaryCategory": "Back-End Developer",
+      "groundTruthSecondaryCategories": [],
+      "predictedPrimaryCategory": "Back-End Developer",
+      "predictedSecondaryCategories": [],
+      "confidence": 1,
+      "latencyMs": 1328,
+      "status": "SUCCESS"
+    },
+    {
+      "sampleId": "EVAL-BE-03",
+      "groundTruthPrimaryCategory": "Back-End Developer",
+      "groundTruthSecondaryCategories": [],
+      "predictedPrimaryCategory": "Back-End Developer",
+      "predictedSecondaryCategories": [],
+      "confidence": 0.9,
+      "latencyMs": 1407,
+      "status": "SUCCESS"
+    },
+    {
+      "sampleId": "EVAL-WA-01",
+      "groundTruthPrimaryCategory": "Web Automation",
+      "groundTruthSecondaryCategories": [],
+      "predictedPrimaryCategory": "Web Automation",
+      "predictedSecondaryCategories": [],
+      "confidence": 1,
+      "latencyMs": 1261,
+      "status": "SUCCESS"
+    },
+    {
+      "sampleId": "EVAL-WA-02",
+      "groundTruthPrimaryCategory": "Web Automation",
+      "groundTruthSecondaryCategories": [],
+      "predictedPrimaryCategory": "Web Automation",
+      "predictedSecondaryCategories": [],
+      "confidence": 1,
+      "latencyMs": 1280,
+      "status": "SUCCESS"
+    },
+    {
+      "sampleId": "EVAL-WA-03",
+      "groundTruthPrimaryCategory": "Web Automation",
+      "groundTruthSecondaryCategories": [],
+      "predictedPrimaryCategory": "Web Automation",
+      "predictedSecondaryCategories": [
+        "Other"
+      ],
+      "confidence": 1,
+      "latencyMs": 1218,
+      "status": "SUCCESS"
+    },
+    {
+      "sampleId": "EVAL-MA-01",
+      "groundTruthPrimaryCategory": "Mobile Automation",
+      "groundTruthSecondaryCategories": [],
+      "predictedPrimaryCategory": "Mobile Automation",
+      "predictedSecondaryCategories": [],
+      "confidence": 1,
+      "latencyMs": 1332,
+      "status": "SUCCESS"
+    },
+    {
+      "sampleId": "EVAL-MA-02",
+      "groundTruthPrimaryCategory": "Mobile Automation",
+      "groundTruthSecondaryCategories": [],
+      "predictedPrimaryCategory": "Mobile Automation",
+      "predictedSecondaryCategories": [],
+      "confidence": 1,
+      "latencyMs": 2153,
+      "status": "SUCCESS"
+    },
+    {
+      "sampleId": "EVAL-MA-03",
+      "groundTruthPrimaryCategory": "Mobile Automation",
+      "groundTruthSecondaryCategories": [],
+      "predictedPrimaryCategory": "Mobile Automation",
+      "predictedSecondaryCategories": [],
+      "confidence": 0.95,
+      "latencyMs": 1334,
+      "status": "SUCCESS"
+    },
+    {
+      "sampleId": "EVAL-AI-01",
+      "groundTruthPrimaryCategory": "AI Engineer",
+      "groundTruthSecondaryCategories": [
+        "Back-End Developer"
+      ],
+      "predictedPrimaryCategory": "AI Engineer",
+      "predictedSecondaryCategories": [
+        "Back-End Developer"
+      ],
+      "confidence": 1,
+      "latencyMs": 1291,
+      "status": "SUCCESS"
+    },
+    {
+      "sampleId": "EVAL-AI-02",
+      "groundTruthPrimaryCategory": "AI Engineer",
+      "groundTruthSecondaryCategories": [],
+      "predictedPrimaryCategory": "AI Engineer",
+      "predictedSecondaryCategories": [],
+      "confidence": 1,
+      "latencyMs": 1322,
+      "status": "SUCCESS"
+    },
+    {
+      "sampleId": "EVAL-AI-03",
+      "groundTruthPrimaryCategory": "AI Engineer",
+      "groundTruthSecondaryCategories": [],
+      "predictedPrimaryCategory": "AI Engineer",
+      "predictedSecondaryCategories": [],
+      "confidence": 1,
+      "latencyMs": 1443,
+      "status": "SUCCESS"
+    },
+    {
+      "sampleId": "EVAL-CB-01",
+      "groundTruthPrimaryCategory": "Chatbot Application Tester",
+      "groundTruthSecondaryCategories": [
+        "AI Engineer"
+      ],
+      "predictedPrimaryCategory": "Chatbot Application Tester",
+      "predictedSecondaryCategories": [
+        "AI Engineer"
+      ],
+      "confidence": 0.9,
+      "latencyMs": 1469,
+      "status": "SUCCESS"
+    },
+    {
+      "sampleId": "EVAL-CB-02",
+      "groundTruthPrimaryCategory": "Chatbot Application Tester",
+      "groundTruthSecondaryCategories": [],
+      "predictedPrimaryCategory": "Chatbot Application Tester",
+      "predictedSecondaryCategories": [],
+      "confidence": 1,
+      "latencyMs": 1271,
+      "status": "SUCCESS"
+    },
+    {
+      "sampleId": "EVAL-CB-03",
+      "groundTruthPrimaryCategory": "Chatbot Application Tester",
+      "groundTruthSecondaryCategories": [],
+      "predictedPrimaryCategory": "Chatbot Application Tester",
+      "predictedSecondaryCategories": [],
+      "confidence": 1,
+      "latencyMs": 1315,
+      "status": "SUCCESS"
+    },
+    {
+      "sampleId": "EVAL-OTH-01",
+      "groundTruthPrimaryCategory": "Other",
+      "groundTruthSecondaryCategories": [],
+      "predictedPrimaryCategory": "Other",
+      "predictedSecondaryCategories": [],
+      "confidence": 1,
+      "latencyMs": 1143,
+      "status": "SUCCESS"
+    },
+    {
+      "sampleId": "EVAL-OTH-02",
+      "groundTruthPrimaryCategory": "Other",
+      "groundTruthSecondaryCategories": [],
+      "predictedPrimaryCategory": "Other",
+      "predictedSecondaryCategories": [],
+      "confidence": 1,
+      "latencyMs": 1188,
+      "status": "SUCCESS"
+    },
+    {
+      "sampleId": "EVAL-OTH-03",
+      "groundTruthPrimaryCategory": "Other",
+      "groundTruthSecondaryCategories": [],
+      "predictedPrimaryCategory": "Other",
+      "predictedSecondaryCategories": [],
+      "confidence": 1,
+      "latencyMs": 1209,
+      "status": "SUCCESS"
+    }
+  ],
+  "primaryCategoryEvaluation": {
+    "perCategory": [
+      {
+        "category": "PSS",
+        "truePositives": 3,
+        "falsePositives": 0,
+        "falseNegatives": 0,
+        "support": 3,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      {
+        "category": "DCS",
+        "truePositives": 3,
+        "falsePositives": 0,
+        "falseNegatives": 0,
+        "support": 3,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      {
+        "category": "Front-End Developer",
+        "truePositives": 3,
+        "falsePositives": 0,
+        "falseNegatives": 0,
+        "support": 3,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      {
+        "category": "Back-End Developer",
+        "truePositives": 3,
+        "falsePositives": 0,
+        "falseNegatives": 0,
+        "support": 3,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      {
+        "category": "Web Automation",
+        "truePositives": 3,
+        "falsePositives": 0,
+        "falseNegatives": 0,
+        "support": 3,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      {
+        "category": "Mobile Automation",
+        "truePositives": 3,
+        "falsePositives": 0,
+        "falseNegatives": 0,
+        "support": 3,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      {
+        "category": "AI Engineer",
+        "truePositives": 3,
+        "falsePositives": 0,
+        "falseNegatives": 0,
+        "support": 3,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      {
+        "category": "Chatbot Application Tester",
+        "truePositives": 3,
+        "falsePositives": 0,
+        "falseNegatives": 0,
+        "support": 3,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      {
+        "category": "Other",
+        "truePositives": 3,
+        "falsePositives": 0,
+        "falseNegatives": 0,
+        "support": 3,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      }
+    ],
+    "overallAccuracy": 1,
+    "evaluationFailures": 0,
+    "totalSamples": 27,
+    "successfullyClassifiedSamples": 27
+  },
+  "secondaryCategoryEvaluation": {
+    "methodology": "micro-averaged multi-label precision/recall/F1 over (sample, category) pairs",
+    "truePositives": 2,
+    "falsePositives": 1,
+    "falseNegatives": 0,
+    "precision": 0.6666666666666666,
+    "recall": 1,
+    "f1": 0.8,
+    "samplesEvaluated": 27,
+    "evaluationFailures": 0
+  },
+  "limitations": [
+    "27 samples (3 per category) is a small evaluation set - per-category metrics are statistically noisy and a single misclassification materially changes a category's precision/recall. Not a substitute for a larger, professionally-curated benchmark.",
+    "Samples are hand-written, not drawn from real anonymized CVs - real-world phrasing, length, and ambiguity will differ.",
+    "LLM responses are not fully deterministic even at a fixed model version - re-running this evaluation may produce slightly different numbers from one run to the next.",
+    "The secondary-category ground truth was assigned by the same person who wrote the dataset, not by an independent labeler - no inter-annotator agreement was measured.",
+    "This evaluates only the CV Classification Agent's category decision, not the quality or specificity of its rationale text."
+  ]
+}

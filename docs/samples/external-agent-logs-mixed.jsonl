@@ -1,0 +1,6 @@
+{"timestamp":"2026-01-16T08:00:00Z","agentName":"Vendor Resume Parser","status":"200","inputTokens":300,"outputTokens":80,"latencyMs":610,"estimatedCost":0.0018}
+{"timestamp":"2026-01-16T08:05:00Z","agentName":"Vendor Resume Parser","status":"500","latencyMs":15000}
+{"agentName":"Vendor Resume Parser","status":"ok"}
+{"timestamp":"not-a-real-date","agentName":"Vendor Resume Parser","status":"ok"}
+this line is not valid JSON at all
+{"timestamp":"2026-01-16T08:10:00Z","agentName":"Vendor Resume Parser","status":"ok","inputTokens":275,"outputTokens":64,"latencyMs":540,"estimatedCost":0.0016}

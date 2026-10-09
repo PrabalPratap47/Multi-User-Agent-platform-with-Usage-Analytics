@@ -1,0 +1,20 @@
+{
+  "name": "multi-user-agent-platform",
+  "version": "1.0.0",
+  "description": "Multi-user agent platform with usage analytics",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'Run: npm run dev in backend/ and frontend/ terminals separately'",
+    "build": "npm run build --workspaces",
+    "typecheck": "npm run typecheck --workspaces",
+    "lint": "npm run lint --workspaces",
+    "format": "npm run format --workspaces"
+  },
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

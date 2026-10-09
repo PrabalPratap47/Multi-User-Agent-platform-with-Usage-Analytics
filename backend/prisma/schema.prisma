@@ -1,0 +1,402 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+//
+// NOTE on model naming: Prisma's generated client property is the model
+// name with ONLY its first character lowercased (not smart acronym
+// handling) - e.g. "CVDocument" would produce "prisma.cVDocument", not
+// "prisma.cvDocument". Models that start with a multi-letter acronym are
+// deliberately named with a single leading capital (LlmUsageLog,
+// CvDocument, CvRecommendation) so the generated client property reads
+// naturally. The @@map table names are unaffected by this either way.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// SQLite. DATABASE_URL is a file: URL resolved relative to THIS directory
+// (backend/prisma/), e.g. "file:../data/dev.db" -> backend/data/dev.db.
+//
+// SQLite stores enums as TEXT and Json as TEXT. Prisma validates enum and
+// Json values on write; the init migration also adds CHECK constraints so
+// the database itself rejects invalid enum values. SQLite has no scalar
+// lists, so category lists are Json holding a string[] (validated with Zod
+// wherever they are read - see utils/categoryList.ts).
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Users & authentication
+// ─────────────────────────────────────────────────────────────────
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  refreshTokens           RefreshToken[]
+  agentRuns               AgentRun[]
+  llmUsageLogs            LlmUsageLog[]
+  cvDocuments             CvDocument[]
+  cvRecommendations       CvRecommendation[]
+  recommendationDecisions RecommendationDecision[]
+  sentimentResults        SentimentResult[]
+  externalAgentLogs       ExternalAgentLog[]
+
+  @@map("users")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+// This is the "sessions / authentication data" table: a server-side record
+// of every refresh token issued. Only a SHA-256 hash is stored (never the
+// raw token, mirroring how passwords are handled), so a session can be
+// genuinely revoked on logout - a stateless JWT-only refresh token cannot be.
+model RefreshToken {
+  id        Int       @id @default(autoincrement())
+  tokenHash String    @unique
+  userId    Int
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Agents & runs
+// ─────────────────────────────────────────────────────────────────
+
+model Agent {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  version     String?
+  createdAt   DateTime @default(now())
+
+  agentRuns         AgentRun[]
+  llmUsageLogs      LlmUsageLog[]
+  cvRecommendations CvRecommendation[]
+  sentimentResults  SentimentResult[]
+
+  @@map("agents")
+}
+
+// One row per agent invocation - this is the "request/run identifier" that
+// llm_usage_logs, cv_recommendations and sentiment_results all reference.
+// A single run can produce more than one LlmUsageLog row (e.g. a retried
+// call) but at most one typed result (a CvRecommendation OR a
+// SentimentResult, depending on which agent ran).
+model AgentRun {
+  id          String    @id @default(uuid())
+  userId      Int
+  agentId     Int
+  agentName   String // snapshot, see note on LlmUsageLog.agentName below
+  // Groups runs created together by one batch CV upload (see
+  // CvDocument.batchId - the same value is stamped on both). Set at
+  // creation time, independent of whether the run has produced a result
+  // yet, so batch progress can be queried while runs are still
+  // PENDING/RUNNING, not only after they reach a terminal CvRecommendation.
+  batchId     String?
+  // The CV this run is classifying (null for non-CV agents). Lets batch
+  // status report each file's own state, even before a result exists.
+  cvDocumentId Int?
+  status      RunStatus @default(PENDING)
+  // Safe, user-facing failure reason when status = ERROR (no raw model output).
+  errorMessage String?
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agent      Agent       @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  cvDocument CvDocument? @relation(fields: [cvDocumentId], references: [id], onDelete: SetNull)
+
+  llmUsageLogs            LlmUsageLog[]
+  cvRecommendation        CvRecommendation?
+  sentimentResult         SentimentResult?
+  recommendationDecisions RecommendationDecision[]
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([agentId, createdAt(sort: Desc)])
+  @@index([status])
+  @@index([batchId])
+  @@index([cvDocumentId])
+  @@map("agent_runs")
+}
+
+enum RunStatus {
+  PENDING
+  RUNNING
+  SUCCESS
+  ERROR
+}
+
+// ─────────────────────────────────────────────────────────────────
+// LLM usage logging
+// ─────────────────────────────────────────────────────────────────
+
+model LlmUsageLog {
+  id            Int       @id @default(autoincrement())
+  timestamp     DateTime
+  runId         String? // the request/run identifier this call belongs to
+  userId        Int
+  agentId       Int
+  // Denormalized snapshot of the agent's name at call time. Usage logs are
+  // an audit trail and must stay accurate even if the Agent row is later
+  // renamed or removed - they should never silently change retroactively
+  // because of an unrelated edit to the agents table.
+  agentName     String
+  model         String
+  inputTokens   Int
+  outputTokens  Int
+  latencyMs     Int
+  status        LogStatus
+  estimatedCost Float?
+  errorCode     String?
+  errorMessage  String?
+  // True only for rows inserted by the seed script for demo purposes.
+  // Real usage logs must NEVER set this - dashboard/evaluation queries
+  // that need genuine data should filter isSeedData = false.
+  isSeedData    Boolean   @default(false)
+  // The provider's own id for the response this row was computed from
+  // (OpenAI chat completion "id"); null for failed calls. Lets an audit
+  // match each row to exactly one raw provider response.
+  providerResponseId String?
+  createdAt     DateTime  @default(now())
+
+  run   AgentRun? @relation(fields: [runId], references: [id], onDelete: SetNull)
+  user  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agent Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([agentId, createdAt(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
+  @@index([runId])
+  @@index([status])
+  @@index([isSeedData])
+  @@index([providerResponseId])
+  @@map("llm_usage_logs")
+}
+
+enum LogStatus {
+  SUCCESS
+  ERROR
+}
+
+// ─────────────────────────────────────────────────────────────────
+// CV pipeline: document -> recommendation -> decision
+// ─────────────────────────────────────────────────────────────────
+
+// The uploaded CV itself. Kept separate from any classification output so
+// the input is immutable and (in principle) re-classifiable.
+model CvDocument {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  batchId   String? // groups documents uploaded together in one batch
+  fileName  String?
+  content   String
+  createdAt DateTime @default(now())
+
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recommendations CvRecommendation[]
+  decisions       RecommendationDecision[]
+  agentRuns       AgentRun[]
+
+  @@index([userId, batchId])
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("cv_documents")
+}
+
+// The LLM's classification OUTPUT for one CvDocument. This is the
+// "original recommendation" - it is written once and never mutated;
+// RecommendationDecision rows reference it rather than overwriting it.
+model CvRecommendation {
+  id                  Int      @id @default(autoincrement())
+  cvDocumentId        Int
+  runId               String?  @unique
+  userId              Int
+  agentId             Int
+  primaryCategory     String
+  secondaryCategories Json // string[]
+  confidenceScore     Float // confidence in primaryCategory, for quick dashboard access
+  confidenceScores    Json // full per-category breakdown: { [category]: 0..1 }
+  // Structured as Array<{ category: string; evidence: string }> - matches
+  // the agent's required output shape exactly, so the cited evidence per
+  // category survives losslessly rather than being flattened into prose.
+  rationale           Json
+  rawResponse         Json // complete raw LLM output, for audit/evaluation
+  createdAt           DateTime @default(now())
+
+  cvDocument CvDocument @relation(fields: [cvDocumentId], references: [id], onDelete: Cascade)
+  run        AgentRun?  @relation(fields: [runId], references: [id], onDelete: SetNull)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agent      Agent      @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  decisions RecommendationDecision[]
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([primaryCategory])
+  @@index([cvDocumentId])
+  @@map("cv_recommendations")
+}
+
+// The human decision on a recommendation. Append-only and separate from
+// CvRecommendation so the original model output is never overwritten -
+// "store the original recommendation separately from the final decision".
+//
+// reason is mandatory for MODIFY and REJECT, optional for ACCEPT. This is
+// enforced at the application layer (Zod, in validators.ts) AND at the
+// database layer via a CHECK constraint in the init migration (Prisma's
+// schema language has no declarative CHECK attribute, so it is hand-written
+// SQL - see prisma/migrations/.../migration.sql and docs/DATABASE.md).
+model RecommendationDecision {
+  id                       Int          @id @default(autoincrement())
+  recommendationId        Int // the "original recommendation" - never overwritten, only referenced
+  // Denormalized from recommendation.cvDocumentId / recommendation.runId:
+  // stored directly so a decision row is a self-contained audit record
+  // (CV ID, agent run ID) queryable without a join, not just reachable
+  // transitively through the recommendation.
+  cvDocumentId             Int
+  agentRunId               String?
+  userId                   Int // the authenticated user who made the decision - never client-supplied
+  decisionType             DecisionType
+  // ACCEPT: equals the original recommendation's category(ies).
+  // MODIFY: the user's chosen replacement category(ies) - must differ
+  //   from the original (enforced in validators.ts).
+  // REJECT: null/empty - no category was accepted. Enforced by a DB CHECK
+  //   constraint alongside the reason-required one (see migration).
+  finalPrimaryCategory     String?
+  finalSecondaryCategories Json // string[]; [] for REJECT
+  reason                   String? // mandatory for MODIFY/REJECT, enforced by Zod + a DB CHECK constraint
+  timestamp                DateTime     @default(now())
+
+  recommendation CvRecommendation @relation(fields: [recommendationId], references: [id], onDelete: Cascade)
+  cvDocument     CvDocument       @relation(fields: [cvDocumentId], references: [id], onDelete: Cascade)
+  run            AgentRun?        @relation(fields: [agentRunId], references: [id], onDelete: SetNull)
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([recommendationId])
+  @@index([cvDocumentId])
+  @@index([agentRunId])
+  @@index([userId, timestamp(sort: Desc)])
+  @@map("recommendation_decisions")
+}
+
+enum DecisionType {
+  ACCEPT
+  MODIFY
+  REJECT
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Sentiment agent
+// ─────────────────────────────────────────────────────────────────
+
+model SentimentResult {
+  id          Int       @id @default(autoincrement())
+  runId       String?   @unique
+  userId      Int
+  agentId     Int
+  inputText   String
+  sentiment   Sentiment
+  confidence  Float
+  // Always present in the agent's required output contract (see
+  // agents/sentiment/schema.ts) - not optional, unlike the earlier
+  // scaffold-era "reasoning" column this replaces.
+  rationale   String
+  rawResponse Json
+  createdAt   DateTime  @default(now())
+
+  run   AgentRun? @relation(fields: [runId], references: [id], onDelete: SetNull)
+  user  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agent Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("sentiment_results")
+}
+
+enum Sentiment {
+  POSITIVE
+  NEUTRAL
+  NEGATIVE
+}
+
+// ─────────────────────────────────────────────────────────────────
+// External / imported agent logs
+//
+// Deliberately a SEPARATE pair of tables from llm_usage_logs/agent_runs,
+// not a view or union over them - imported data must never contaminate
+// this platform's own usage metrics (see analyticsService.ts, which
+// queries llm_usage_logs exclusively and never references these tables
+// at all). See docs/EXTERNAL_LOG_FORMAT.md for the documented format
+// and the per-field leniency rules (most fields are optional, since a
+// foreign agent's log format is never assumed to match our own).
+// ─────────────────────────────────────────────────────────────────
+
+// One row per imported file (a "batch" of external records).
+model ExternalAgentLog {
+  id              Int      @id @default(autoincrement())
+  userId          Int // who imported it (authenticated uploader, never client-asserted)
+  sourceAgentName String
+  fileName        String
+  fileFormat      String // 'json' | 'jsonl' - which parser was used
+  totalRecords    Int // records attempted (valid + invalid)
+  validRecords    Int // records that passed validation and were stored
+  invalidRecords  Int // records rejected - see parseErrors for why
+  // Array<{ index: number, reason: string }> - one entry per rejected
+  // record, so "error reporting for malformed records" survives in the
+  // database, not just in the one-time API response.
+  parseErrors     Json
+  importTimestamp DateTime @default(now())
+  notes           String?
+
+  user    User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  records ExternalAgentLogRecord[]
+
+  @@index([userId, importTimestamp(sort: Desc)])
+  @@map("external_agent_logs")
+}
+
+// One row per successfully-validated record within an import. Mirrors
+// (loosely) the shape of llm_usage_logs so the dashboard can compute
+// comparable aggregates, but is never joined with or unioned into it.
+model ExternalAgentLogRecord {
+  id       Int    @id @default(autoincrement())
+  importId Int
+
+  // Raw values preserved exactly as given, for audit - "do not assume
+  // the external agent uses the same internal format" means we never
+  // discard what was actually submitted, even after normalizing it.
+  rawRecord Json
+
+  timestamp      DateTime // parsed from the record's timestamp field
+  externalUserId String? // the external system's own user identifier, if given - NOT assumed to match our userId space
+  agentName      String
+  model          String?
+  inputTokens    Int?
+  outputTokens   Int?
+  latencyMs      Int?
+  rawStatus      String? // the external system's own status string, verbatim
+  isError        Boolean // normalized from rawStatus by a documented heuristic - see externalLogFormat.ts
+  estimatedCost  Float?
+
+  createdAt DateTime @default(now())
+
+  import ExternalAgentLog @relation(fields: [importId], references: [id], onDelete: Cascade)
+
+  @@index([importId])
+  @@index([agentName])
+  @@index([timestamp(sort: Desc)])
+  @@map("external_agent_log_records")
+}
