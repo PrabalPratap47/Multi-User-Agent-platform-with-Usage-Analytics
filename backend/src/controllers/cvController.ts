@@ -8,6 +8,7 @@ import { CvDecisionService } from '../services/cvDecisionService.js';
 import { CvBatchService, toSafeRunErrorMessage } from '../services/cvBatchService.js';
 import { LLMServiceError } from '../services/llmService.js';
 import { validateBatchUpload } from '../utils/validators.js';
+import { PdfExtractionError } from '../utils/pdfText.js';
 
 export class CVController {
   /**
@@ -46,14 +47,35 @@ export class CVController {
   });
 
   /**
+   * DELETE /api/cv/documents/:documentId
+   * Permanently deletes one CV and its classification/decision data
+   * (admin only). Agent runs and usage logs are kept.
+   */
+  static deleteDocument = asyncHandler(async (req: Request, res: Response) => {
+    if (!req.user) throw Errors.unauthorized();
+
+    const documentId = parseDbId(req.params.documentId, 'documentId');
+    const result = await CvClassificationService.deleteDocument(req.user, documentId);
+
+    res.json({
+      success: true,
+      data: result,
+    } as ApiResponse);
+  });
+
+  /**
    * POST /api/cv/classify
-   * Convenience: upload and classify in a single call.
+   * Convenience: upload and classify in a single call. Takes a .txt CV's
+   * text (cvContent) or one base64-encoded PDF (pdfBase64).
    */
   static classify = asyncHandler(async (req: Request, res: Response) => {
     if (!req.user) throw Errors.unauthorized();
 
     try {
-      const recommendation = await CvClassificationService.classifyContent(req.user, req.body);
+      const recommendation =
+        req.body?.pdfBase64 !== undefined
+          ? await CvClassificationService.classifyPdf(req.user, req.body)
+          : await CvClassificationService.classifyContent(req.user, req.body);
       res.status(201).json({
         success: true,
         data: recommendation,
@@ -167,6 +189,10 @@ export class CVController {
  * for the global error handler to deal with.
  */
 function toSafeClassificationError(error: unknown): unknown {
+  if (error instanceof PdfExtractionError) {
+    // An unusable uploaded PDF is a client error; the message is user-safe.
+    return Errors.badRequest(error.message);
+  }
   if (error instanceof CvClassificationValidationError) {
     return Errors.badGateway(
       'CV classification could not be completed: the model response did not pass validation. Please try again.'

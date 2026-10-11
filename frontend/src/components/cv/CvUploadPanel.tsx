@@ -1,6 +1,16 @@
 import { useRef, useState, type ChangeEvent } from 'react';
 import type { CvBatchFile } from '../../types/index.js';
-import { ACCEPTED_CV_EXTENSIONS, MAX_CV_CHARS, MAX_CV_FILES, checkCvFile, formatBytes, type CheckedCvFile } from '../../utils/cvFiles.js';
+import {
+  ACCEPTED_CV_EXTENSIONS,
+  ACCEPTED_CV_MIME_TYPES,
+  MAX_CV_CHARS,
+  MAX_CV_FILES,
+  MAX_PDF_BYTES,
+  MAX_UPLOAD_BYTES,
+  checkCvFile,
+  formatBytes,
+  type CheckedCvFile,
+} from '../../utils/cvFiles.js';
 
 export interface RejectedFile {
   fileName: string;
@@ -21,6 +31,8 @@ export function CvUploadPanel({
   const valid = checked.filter((f): f is Extract<CheckedCvFile, { ok: true }> => f.ok);
   const invalid = checked.filter((f): f is Extract<CheckedCvFile, { ok: false }> => !f.ok);
   const tooMany = valid.length > MAX_CV_FILES;
+  const uploadBytes = valid.reduce((sum, f) => sum + f.uploadBytes, 0);
+  const tooLarge = !tooMany && uploadBytes > MAX_UPLOAD_BYTES;
 
   const handleChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
@@ -38,7 +50,7 @@ export function CvUploadPanel({
   };
 
   const submit = () => {
-    if (valid.length === 0 || tooMany) return;
+    if (valid.length === 0 || tooMany || tooLarge) return;
     onSubmit(
       valid.map(f => f.payload),
       invalid.map(f => ({ fileName: f.fileName, reason: f.reason }))
@@ -57,14 +69,16 @@ export function CvUploadPanel({
           ref={inputRef}
           type="file"
           multiple
-          accept={`${ACCEPTED_CV_EXTENSIONS},text/plain`}
+          accept={`${ACCEPTED_CV_EXTENSIONS},${ACCEPTED_CV_MIME_TYPES}`}
           onChange={handleChange}
           disabled={busy}
           className="mt-1 block w-full text-sm text-gray-700 file:mr-3 file:rounded-md file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50"
         />
         <p className="mt-1 text-xs text-gray-500">
-          Plain-text .txt files, up to {MAX_CV_CHARS.toLocaleString()} characters each, at most {MAX_CV_FILES} files per upload.
-          One file is classified immediately; several are processed as a batch.
+          Plain-text .txt files or text-based .pdf files (up to {formatBytes(MAX_PDF_BYTES)} each), with up to{' '}
+          {MAX_CV_CHARS.toLocaleString()} characters of text each; .txt and .pdf can be mixed, at most {MAX_CV_FILES} files per
+          upload. Scanned PDFs (images only) are not supported. One file is classified immediately; several are processed as a
+          batch.
         </p>
       </div>
 
@@ -98,6 +112,12 @@ export function CvUploadPanel({
           {valid.length} valid files selected - at most {MAX_CV_FILES} can be uploaded at once. Select fewer files.
         </p>
       )}
+      {tooLarge && (
+        <p role="alert" className="text-sm text-red-600">
+          The selected files add up to {formatBytes(uploadBytes)} - at most {formatBytes(MAX_UPLOAD_BYTES)} can be uploaded at once.
+          Select fewer files.
+        </p>
+      )}
       {checked.length > 0 && valid.length === 0 && !checking && (
         <p role="alert" className="text-sm text-red-600">
           None of the selected files can be uploaded. Fix the problems above and choose the files again.
@@ -108,7 +128,7 @@ export function CvUploadPanel({
         <button
           type="button"
           onClick={submit}
-          disabled={busy || checking || valid.length === 0 || tooMany}
+          disabled={busy || checking || valid.length === 0 || tooMany || tooLarge}
           className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
         >
           {valid.length <= 1 ? 'Classify CV' : `Classify ${valid.length} CVs`}

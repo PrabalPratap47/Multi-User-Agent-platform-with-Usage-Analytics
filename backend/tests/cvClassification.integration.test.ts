@@ -3,6 +3,7 @@ import bcryptjs from 'bcryptjs';
 import request from 'supertest';
 import { app, loginAs, TEST_PASSWORD } from './helpers.js';
 import prisma from '../src/db/client.js';
+import { cvFeedbackFrom } from './fixtures/cvFeedback.js';
 import config from '../src/config/env.js';
 import {
   CVClassificationAgent,
@@ -95,6 +96,7 @@ function validResponseText(primary: string, evidence: string): string {
     secondaryCategories: [],
     confidence,
     rationale: [{ category: primary, evidence }],
+    feedback: cvFeedbackFrom(evidence),
   });
 }
 

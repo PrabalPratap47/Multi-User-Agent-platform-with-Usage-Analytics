@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { SKILLS_GAP_ROLES } from '../agents/skillsGap/roles.js';
 
 // CV Categories
 export const CV_CATEGORIES = [
@@ -58,6 +59,14 @@ export const CVClassificationRequestSchema = z.object({
   batchId: z.string().min(1).max(100).optional(),
 });
 
+// One PDF CV for POST /api/cv/classify, base64-encoded. Size, signature and
+// text are checked by utils/pdfText.ts; the extracted text then goes through
+// CVClassificationRequestSchema like any .txt CV.
+export const PdfClassificationRequestSchema = z.object({
+  pdfBase64: z.string(),
+  fileName: SafeFileNameSchema.optional(),
+});
+
 export const SentimentRequestSchema = z.object({
   text: z.string().min(1).max(5000),
 });
@@ -91,13 +100,11 @@ export const RecommendationDecisionSchema = z
     path: ['reason'],
   });
 
-// Batch CV upload. Deliberately NOT a multipart/binary-file upload: this
-// backend has no multipart-parsing dependency installed, and adding one
-// (plus PDF/DOCX text extraction) could not be verified working in this
-// environment. The frontend reads actual files selected via a real file
-// picker (FileReader.readAsText()) and sends their name/type/content as
-// JSON - "upload multiple files" from the user's perspective, without an
-// unverified new runtime dependency. See docs/BATCH_CV_PROCESSING.md.
+// Batch CV upload. Deliberately NOT a multipart/binary-file upload: the
+// frontend reads actual files selected via a real file picker and sends
+// their name/type/content as JSON - a .txt file's text, or a PDF's bytes
+// base64-encoded (mimeType application/pdf; its text is extracted
+// server-side by utils/pdfText.ts). See docs/BATCH_CV_PROCESSING.md.
 //
 // Only the REQUEST shape (is `files` an array, within the count limit,
 // with the right field types) is checked here. Per-file business rules
@@ -131,6 +138,48 @@ export const ImportLogSchema = z.object({
   notes: z.string().max(1000).optional(),
 });
 
+// Admin user management: create an account. Extra fields (e.g. a userId)
+// are ignored - who is acting comes only from the session.
+export const MIN_PASSWORD_LENGTH = 8;
+const noControlCharacters = (value: string) => [...value].every(ch => ch.charCodeAt(0) >= 32 && ch.charCodeAt(0) !== 127);
+
+// The one password rule for accounts an admin creates or resets.
+const PasswordSchema = z
+  .string({ required_error: 'Password is required', invalid_type_error: 'Password is required' })
+  .min(MIN_PASSWORD_LENGTH, `Password must be at least ${MIN_PASSWORD_LENGTH} characters`)
+  // bcrypt only uses the first 72 bytes; a longer password would be silently truncated.
+  .refine(p => new TextEncoder().encode(p).length <= 72, 'Password must be at most 72 bytes')
+  .refine(p => /[A-Za-z]/.test(p) && /[0-9]/.test(p), 'Password must contain at least one letter and one number');
+
+export const CreateUserSchema = z.object({
+  name: z
+    .string({ required_error: 'Full name is required', invalid_type_error: 'Full name is required' })
+    .trim()
+    .min(1, 'Full name is required')
+    .max(100, 'Full name must be at most 100 characters')
+    .refine(noControlCharacters, 'Full name contains characters that are not allowed'),
+  email: z
+    .string({ required_error: 'Email address is required', invalid_type_error: 'Email address is required' })
+    .trim()
+    .min(1, 'Email address is required')
+    .max(254, 'Email address is too long')
+    .email('Enter a valid email address')
+    .transform(email => email.toLowerCase()),
+  password: PasswordSchema,
+  role: z.enum(['user', 'admin'], { errorMap: () => ({ message: 'Choose a role: User or Admin' }) }),
+});
+
+// Admin → Users: set a new password for an account.
+export const ChangePasswordSchema = z.object({ password: PasswordSchema });
+
+export function validateChangePassword(data: unknown) {
+  return ChangePasswordSchema.parse(data);
+}
+
+export function validateCreateUser(data: unknown) {
+  return CreateUserSchema.parse(data);
+}
+
 // Validation functions
 export function validateLogin(data: unknown) {
   return LoginSchema.parse(data);
@@ -138,6 +187,30 @@ export function validateLogin(data: unknown) {
 
 export function validateCVClassificationRequest(data: unknown) {
   return CVClassificationRequestSchema.parse(data);
+}
+
+// Skills gap analysis request: a target role from the fixed list, plus the CV
+// either as text (cvContent, same rules as classification) or one
+// base64-encoded PDF (pdfBase64, extracted by utils/pdfText.ts). Any userId in
+// the body is ignored - the analysis belongs to the authenticated caller.
+export const SkillsGapRequestSchema = z
+  .object({
+    targetRole: z.enum(SKILLS_GAP_ROLES),
+    fileName: SafeFileNameSchema.optional(),
+    cvContent: z.string().optional(),
+    pdfBase64: z.string().optional(),
+  })
+  .refine(data => (data.cvContent === undefined) !== (data.pdfBase64 === undefined), {
+    message: 'provide exactly one of cvContent or pdfBase64',
+    path: ['cvContent'],
+  });
+
+export function validateSkillsGapRequest(data: unknown) {
+  return SkillsGapRequestSchema.parse(data);
+}
+
+export function validatePdfClassificationRequest(data: unknown) {
+  return PdfClassificationRequestSchema.parse(data);
 }
 
 export function validateSentimentRequest(data: unknown) {

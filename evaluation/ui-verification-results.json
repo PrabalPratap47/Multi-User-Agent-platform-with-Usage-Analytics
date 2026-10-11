@@ -1,6 +1,6 @@
 {
   "overall": "PASS",
-  "generatedAt": "2026-10-09T19:03:05.008Z",
+  "generatedAt": "2026-10-11T07:43:25.226Z",
   "provider": "CONTROLLED (no OpenAI calls)",
   "browser": "Google Chrome (headless, via playwright-core)",
   "viewports": {
@@ -38,7 +38,7 @@
       "area": "Roles",
       "name": "admin: dashboard tabs match the role",
       "pass": true,
-      "detail": "ANALYTICS, MY RECORDS, AGENT RUNS, CV PROCESSING, SENTIMENT, EXTERNAL LOGS, ADMIN USERS"
+      "detail": "ANALYTICS, MY RECORDS, AGENT RUNS, CV PROCESSING, SENTIMENT, SKILLS GAP ANALYSIS, EXTERNAL LOGS, ADMIN USERS"
     },
     {
       "area": "Layout",
@@ -72,6 +72,12 @@
     },
     {
       "area": "Layout",
+      "name": "desktop admin SKILLS GAP ANALYSIS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
       "name": "desktop admin EXTERNAL LOGS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
       "pass": true,
       "detail": "overflow 0px; unnamed []; low contrast 0"
@@ -86,13 +92,13 @@
       "area": "Keyboard",
       "name": "admin desktop: every focus stop in the first 30 Tab presses has a visible focus indicator",
       "pass": true,
-      "detail": "27 stops; without indicator: none"
+      "detail": "28 stops; without indicator: none"
     },
     {
       "area": "Roles",
       "name": "user1: dashboard tabs match the role",
       "pass": true,
-      "detail": "ANALYTICS, MY RECORDS, AGENT RUNS, CV PROCESSING, SENTIMENT, EXTERNAL LOGS"
+      "detail": "ANALYTICS, MY RECORDS, AGENT RUNS, CV PROCESSING, SENTIMENT, SKILLS GAP ANALYSIS, EXTERNAL LOGS"
     },
     {
       "area": "Layout",
@@ -121,6 +127,12 @@
     {
       "area": "Layout",
       "name": "desktop user1 SENTIMENT: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "desktop user1 SKILLS GAP ANALYSIS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
       "pass": true,
       "detail": "overflow 0px; unnamed []; low contrast 0"
     },
@@ -174,6 +186,12 @@
     },
     {
       "area": "Layout",
+      "name": "tablet admin SKILLS GAP ANALYSIS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
       "name": "tablet admin EXTERNAL LOGS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
       "pass": true,
       "detail": "overflow 0px; unnamed []; low contrast 0"
@@ -211,6 +229,12 @@
     {
       "area": "Layout",
       "name": "tablet user1 SENTIMENT: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "tablet user1 SKILLS GAP ANALYSIS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
       "pass": true,
       "detail": "overflow 0px; unnamed []; low contrast 0"
     },
@@ -264,6 +288,12 @@
     },
     {
       "area": "Layout",
+      "name": "mobile admin SKILLS GAP ANALYSIS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
       "name": "mobile admin EXTERNAL LOGS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
       "pass": true,
       "detail": "overflow 0px; unnamed []; low contrast 0"
@@ -301,6 +331,12 @@
     {
       "area": "Layout",
       "name": "mobile user1 SENTIMENT: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "mobile user1 SKILLS GAP ANALYSIS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
       "pass": true,
       "detail": "overflow 0px; unnamed []; low contrast 0"
     },
@@ -354,6 +390,12 @@
     },
     {
       "area": "Layout",
+      "name": "narrow admin SKILLS GAP ANALYSIS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
       "name": "narrow admin EXTERNAL LOGS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
       "pass": true,
       "detail": "overflow 0px; unnamed []; low contrast 0"
@@ -391,6 +433,12 @@
     {
       "area": "Layout",
       "name": "narrow user1 SENTIMENT: no horizontal page scroll, every control named, text contrast AA, active tab announced",
+      "pass": true,
+      "detail": "overflow 0px; unnamed []; low contrast 0"
+    },
+    {
+      "area": "Layout",
+      "name": "narrow user1 SKILLS GAP ANALYSIS: no horizontal page scroll, every control named, text contrast AA, active tab announced",
       "pass": true,
       "detail": "overflow 0px; unnamed []; low contrast 0"
     },
@@ -437,6 +485,30 @@
       "detail": ""
     },
     {
+      "area": "CV",
+      "name": "a CV record opens after upload, collapses to its summary line and expands again",
+      "pass": true,
+      "detail": "▶ / ui-single.txt /  / Result #5 · classified 10/11/2026, 1:13:17 PM"
+    },
+    {
+      "area": "Layout",
+      "name": "the dashboard tabs stay at the top of the screen while scrolling",
+      "pass": true,
+      "detail": "scrolled 1641px, tabs at y=0"
+    },
+    {
+      "area": "CV",
+      "name": "a regular user sees no Delete action on CV records",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "area": "CV",
+      "name": "an admin deletes a user's CV through the confirmation dialog; it disappears from the list and the API",
+      "pass": true,
+      "detail": ""
+    },
+    {
       "area": "Batch",
       "name": "a partial batch failure is reported as such, with a Failed badge and the reason next to the failed file",
       "pass": true,
@@ -445,6 +517,12 @@
     {
       "area": "Sentiment",
       "name": "the sentiment result shown matches the stored result (API)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "area": "Sentiment",
+      "name": "a regular user sees no Delete action on sentiment results",
       "pass": true,
       "detail": ""
     },

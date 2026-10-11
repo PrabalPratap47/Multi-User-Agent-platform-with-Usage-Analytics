@@ -35,6 +35,13 @@ model User {
   email     String   @unique
   password  String
   role      Role     @default(USER)
+  // Full name, set when an admin creates the account (null for older accounts).
+  name      String?
+  // Set when an admin deletes the account. A soft delete: the account can no
+  // longer log in or use any session, but its CVs, results, runs and usage
+  // logs stay so history and analytics remain accurate (relations cascade on
+  // a physical delete, which is why accounts are never physically deleted).
+  deactivatedAt DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -45,6 +52,7 @@ model User {
   cvRecommendations       CvRecommendation[]
   recommendationDecisions RecommendationDecision[]
   sentimentResults        SentimentResult[]
+  skillsGapAnalyses       SkillsGapAnalysis[]
   externalAgentLogs       ExternalAgentLog[]
 
   @@map("users")
@@ -88,6 +96,7 @@ model Agent {
   llmUsageLogs      LlmUsageLog[]
   cvRecommendations CvRecommendation[]
   sentimentResults  SentimentResult[]
+  skillsGapAnalyses SkillsGapAnalysis[]
 
   @@map("agents")
 }
@@ -125,6 +134,7 @@ model AgentRun {
   llmUsageLogs            LlmUsageLog[]
   cvRecommendation        CvRecommendation?
   sentimentResult         SentimentResult?
+  skillsGapAnalysis       SkillsGapAnalysis?
   recommendationDecisions RecommendationDecision[]
 
   @@index([userId, createdAt(sort: Desc)])
@@ -235,6 +245,9 @@ model CvRecommendation {
   // the agent's required output shape exactly, so the cited evidence per
   // category survives losslessly rather than being flattened into prose.
   rationale           Json
+  // 2-4 sentences of constructive feedback about the CV (null for results
+  // classified before feedback existed - shown as unavailable, never invented).
+  feedback            String?
   rawResponse         Json // complete raw LLM output, for audit/evaluation
   createdAt           DateTime @default(now())
 
@@ -324,6 +337,33 @@ model SentimentResult {
 
   @@index([userId, createdAt(sort: Desc)])
   @@map("sentiment_results")
+}
+
+// Output of the CV Skills Extraction & Gap Analysis Agent: one saved,
+// validated analysis per run. Deliberately separate from CV classification
+// (no link to cv_recommendations / recommendation_decisions - an analysis
+// never accepts, modifies or rejects a recommendation). The CV text itself
+// is not stored here, only its file name and length.
+model SkillsGapAnalysis {
+  id          Int      @id @default(autoincrement())
+  runId       String?  @unique
+  userId      Int
+  agentId     Int
+  targetRole  String // one of SKILLS_GAP_ROLES (agents/skillsGap/roles.ts)
+  cvFileName  String?
+  cvCharCount Int
+  // The validated, sanitized response (agents/skillsGap/schema.ts).
+  result      Json
+  // The complete parsed model output, verbatim, for audit.
+  rawResponse Json
+  createdAt   DateTime @default(now())
+
+  run   AgentRun? @relation(fields: [runId], references: [id], onDelete: SetNull)
+  user  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agent Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("skills_gap_analyses")
 }
 
 enum Sentiment {

@@ -13,6 +13,7 @@ import {
 } from '../src/services/llmService.js';
 import { AgentContext } from '../src/types/index.js';
 import { CV_CATEGORIES } from '../src/utils/validators.js';
+import { cvFeedbackFrom } from './fixtures/cvFeedback.js';
 
 const TEST_USER_EMAIL = 'cv-agent-test-user@test.local';
 let context: AgentContext;
@@ -77,7 +78,7 @@ function mockClient(
 // the agent's outputGuard now checks that primaryCategory's rationale
 // shares real vocabulary with the CV text, so every call site must supply
 // evidence that's actually grounded in whatever CV content that test uses.
-function validResponseText(primary: string, evidence: string): string {
+function validResponseText(primary: string, evidence: string, feedback = cvFeedbackFrom(evidence)): string {
   const confidence: Record<string, number> = {};
   for (const category of CV_CATEGORIES) confidence[category] = 0;
   confidence[primary] = 0.9;
@@ -87,6 +88,7 @@ function validResponseText(primary: string, evidence: string): string {
     secondaryCategories: [],
     confidence,
     rationale: [{ category: primary, evidence }],
+    feedback,
   });
 }
 
@@ -174,6 +176,7 @@ describe('CVClassificationAgent - repair retry', () => {
                     secondaryCategories: [],
                     confidence: { Other: 0.5 }, // missing 8 required categories
                     rationale: [{ category: 'Other', evidence: 'x' }],
+                    feedback: cvFeedbackFrom('x'),
                   }),
                 },
               ],
@@ -254,7 +257,8 @@ describe('CVClassificationAgent - prompt-injection resistance', () => {
                   type: 'text',
                   text: validResponseText(
                     'Other',
-                    'The provided text contains instructions attempting to override the classification task rather than genuine CV content describing skills or experience.'
+                    'The provided text contains instructions attempting to override the classification task rather than genuine CV content describing skills or experience.',
+                    'The submitted text asks for access to be granted instead of classifying this CV. It could be improved by describing actual skills and work history.'
                   ),
                 },
               ],
@@ -281,14 +285,14 @@ describe('CVClassificationAgent - prompt-injection resistance', () => {
 
   it('the system instructions are identical regardless of CV content (never built from user input)', async () => {
     const seen: string[] = [];
-    const makeAgent = (evidence: string) =>
+    const makeAgent = (evidence: string, feedback: string) =>
       new CVClassificationAgent(
         new LLMService(
           mockClient([
             async req => {
               seen.push(req.system ?? '');
               return {
-                content: [{ type: 'text', text: validResponseText('Other', evidence) }],
+                content: [{ type: 'text', text: validResponseText('Other', evidence, feedback) }],
                 usage: { input_tokens: 10, output_tokens: 5 },
               };
             },
@@ -296,12 +300,12 @@ describe('CVClassificationAgent - prompt-injection resistance', () => {
         )
       );
 
-    await makeAgent('Content describes a tester role without further detail.').execute(
+    await makeAgent('Content describes a tester role without further detail.', 'The CV is completely ordinary content without project detail. It could be improved by listing tools and results.').execute(
       'Completely ordinary CV content about a tester.',
       context,
       await newRunId()
     );
-    await makeAgent('Mentions Selenium and Cypress without further detail on role.').execute(
+    await makeAgent('Mentions Selenium and Cypress without further detail on role.', 'The CV mentions Selenium and Cypress without context. It could be improved by describing the test suites built.').execute(
       'A totally different CV, mentioning Selenium and Cypress.',
       context,
       await newRunId()

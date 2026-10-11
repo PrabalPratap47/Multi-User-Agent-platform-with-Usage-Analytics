@@ -4,6 +4,7 @@ import { agentRunsService } from '../services/agentRunsService.js';
 import { usersService } from '../services/usersService.js';
 import { AgentRunStatus, AgentRunSummary } from '../types/index.js';
 import { USAGE_ISSUE_TEXT } from '../utils/usageIssues.js';
+import { categoryLabel } from '../utils/categoryLabels.js';
 import { EmptyState, ErrorState, LoadingState, SectionCard, ScrollableTable } from './analytics/AnalyticsPrimitives.js';
 
 const PAGE_SIZE = 25;
@@ -29,7 +30,7 @@ function RunStatusBadge({ status }: { status: AgentRunStatus }) {
 const formatTime = (iso: string | null) => (iso ? new Date(iso).toLocaleString() : '—');
 
 function resultSummary(run: AgentRunSummary): string {
-  if (run.result?.type === 'cv_recommendation') return run.result.primaryCategory;
+  if (run.result?.type === 'cv_recommendation') return categoryLabel(run.result.primaryCategory);
   if (run.result?.type === 'sentiment_result') return `Sentiment: ${run.result.sentiment.toLowerCase()}`;
   if (run.status === 'ERROR') return run.errorMessage ?? 'Failed (no reason recorded)';
   return '—';

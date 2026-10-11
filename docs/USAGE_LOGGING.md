@@ -45,8 +45,8 @@ const result = await llmService.call({
 Every one of those input fields maps directly to the requirement this
 service exists to satisfy: system instructions and user content are kept
 separate (the agent's instructions can never be overridden by content that
-flows through `userContent` - see the prompt-injection notes in
-`promptInjectionDefense.ts`); `context` is how the log row gets attributed
+flows through `userContent` - see `docs/PROMPT_INJECTION_SECURITY.md`);
+`context` is how the log row gets attributed
 to the real authenticated user, not a value the agent could fake; `runId`
 ties every LLM call back to the `agent_runs` row ("the request/run
 identifier") so retries on the same run are traceable.
@@ -216,9 +216,10 @@ in `completion_tokens`.
 `LLMService` never writes to the database itself - it delegates to
 `UsageLogService.logCall()`, which:
 
-1. Looks up the `Agent` row by name. If the agent isn't registered (only
-   possible for a misspelled name, since the two real agents are seeded), it
-   writes nothing and reports `AGENT_NOT_REGISTERED` (see above).
+1. Looks up the `Agent` row by name. If the agent isn't registered, it
+   writes nothing and reports `AGENT_NOT_REGISTERED` (see above). The CV
+   Classification and Sentiment agents are registered by the seed; the
+   Skills Gap agent registers itself (upsert) before its first run.
 2. Computes `estimatedCost` via `calculateCost()`.
 3. Inserts one `llm_usage_logs` row with: `timestamp`, `runId`, `userId`,
    `agentId` + a denormalized `agentName` snapshot (so the log stays
@@ -234,17 +235,19 @@ lets dashboard and evaluation queries filter out fabricated demo token
 counts and trust that every unflagged row reflects a real provider
 response. See `backend/prisma/schema.prisma` for the full column list.
 
-## What the dashboard will read
+## What the dashboard reads
 
-Nothing in this service is dashboard-specific - the dashboard (not yet
-built) will query `llm_usage_logs` directly (via `UsageLogService`'s
-existing `getUserStats` / `getUsageForPeriod` / `getAggregateStats`
-helpers, or new queries alongside them) for totals, breakdowns by user/agent,
-error rates, and latency percentiles. Because every number in that table
-came from this one code path, "dashboard total vs. raw API usage" sanity
-checks (part of the evaluation requirements) reduce to: query the same
-table twice, with and without aggregation - there's no separate
-estimation pipeline that could drift from it.
+Nothing in this service is dashboard-specific. The dashboard's token, cost,
+error-rate and latency metrics are computed by `AnalyticsService`
+(`services/analyticsService.ts`) with Prisma aggregates over
+`llm_usage_logs`, excluding seed rows (see `docs/ANALYTICS_API.md`); MY
+RECORDS lists the rows through `GET /api/usage-logs`. `UsageLogService`'s
+older `getUserStats` / `getUsageForPeriod` / `getAggregateStats` helpers
+are not used by any route. Because every number in that table came from
+this one code path, "dashboard total vs. raw API usage" checks (part of the
+evaluation requirements) reduce to: query the same table twice, with and
+without aggregation - there's no separate estimation pipeline that could
+drift from it.
 
 ## Testing strategy
 

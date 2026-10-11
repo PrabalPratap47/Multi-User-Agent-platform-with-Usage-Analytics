@@ -13,6 +13,7 @@ router.get('/runs', AnalyticsController.getRunCounts);
 router.get('/errors', AnalyticsController.getErrors);
 router.get('/latency', AnalyticsController.getLatency);
 router.get('/acceptance-rate', AnalyticsController.getAcceptanceRate);
+router.get('/final-categories', AnalyticsController.getFinalCategories);
 router.get('/time-saved', AnalyticsController.getTimeSaved);
 router.get('/usage-completeness', AnalyticsController.getUsageCompleteness);
 router.get('/evaluation', AnalyticsController.getEvaluation);

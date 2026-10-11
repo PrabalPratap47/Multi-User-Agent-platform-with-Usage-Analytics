@@ -27,6 +27,7 @@ import {
 } from '../src/agents/SentimentAgent.js';
 import { LLMService, type LLMProviderRequest, type LLMProviderResponse } from '../src/services/llmService.js';
 import { CV_CATEGORIES } from '../src/utils/validators.js';
+import { cvFeedbackFrom } from './fixtures/cvFeedback.js';
 
 const EMAILS = {
   admin: 'runs-admin@test.local',
@@ -78,6 +79,7 @@ function cvResponse(): LLMProviderResponse {
         secondaryCategories: [],
         confidence,
         rationale: [{ category: 'Back-End Developer', evidence: 'Node.js and Express backend engineer' }],
+        feedback: cvFeedbackFrom('Node.js and Express backend engineer'),
       }),
     }],
     model: 'gpt-4o',

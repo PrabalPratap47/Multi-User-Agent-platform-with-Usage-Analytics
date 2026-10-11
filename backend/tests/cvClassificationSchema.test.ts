@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { CVClassificationResponseSchema } from '../src/agents/cvClassification/schema.js';
+
+const FEEDBACK = 'The CV describes REST API work in Node.js clearly. It could be improved by adding measurable outcomes.';
 import { CV_CATEGORIES } from '../src/utils/validators.js';
 import jsonSchema from '../src/agents/cvClassification/cvClassificationResponse.schema.json';
 
@@ -19,6 +21,7 @@ describe('CVClassificationResponseSchema - valid input', () => {
       secondaryCategories: ['AI Engineer'],
       confidence: validConfidence('Back-End Developer', { 'AI Engineer': 0.3 }),
       rationale: baseRationale('Back-End Developer'),
+      feedback: FEEDBACK,
     };
     expect(CVClassificationResponseSchema.safeParse(payload).success).toBe(true);
   });
@@ -29,6 +32,7 @@ describe('CVClassificationResponseSchema - valid input', () => {
       secondaryCategories: [],
       confidence: validConfidence('Other'),
       rationale: baseRationale('Other'),
+      feedback: FEEDBACK,
     };
     expect(CVClassificationResponseSchema.safeParse(payload).success).toBe(true);
   });
@@ -41,6 +45,7 @@ describe('CVClassificationResponseSchema - structural violations', () => {
       secondaryCategories: [],
       confidence: validConfidence('Other'),
       rationale: baseRationale('Other'),
+      feedback: FEEDBACK,
     };
     expect(CVClassificationResponseSchema.safeParse(payload).success).toBe(false);
   });
@@ -53,6 +58,7 @@ describe('CVClassificationResponseSchema - structural violations', () => {
       secondaryCategories: [],
       confidence,
       rationale: baseRationale('Other'),
+      feedback: FEEDBACK,
     };
     expect(CVClassificationResponseSchema.safeParse(payload).success).toBe(false);
   });
@@ -65,6 +71,7 @@ describe('CVClassificationResponseSchema - structural violations', () => {
       secondaryCategories: [],
       confidence,
       rationale: baseRationale('Other'),
+      feedback: FEEDBACK,
     };
     expect(CVClassificationResponseSchema.safeParse(payload).success).toBe(false);
   });
@@ -75,6 +82,7 @@ describe('CVClassificationResponseSchema - structural violations', () => {
       secondaryCategories: [],
       confidence: validConfidence('Other'),
       rationale: [],
+      feedback: FEEDBACK,
     };
     expect(CVClassificationResponseSchema.safeParse(payload).success).toBe(false);
   });
@@ -85,6 +93,7 @@ describe('CVClassificationResponseSchema - structural violations', () => {
       secondaryCategories: [],
       confidence: validConfidence('Other'),
       rationale: [{ category: 'Other', evidence: '   ' }],
+      feedback: FEEDBACK,
     };
     expect(CVClassificationResponseSchema.safeParse(payload).success).toBe(false);
   });
@@ -95,6 +104,7 @@ describe('CVClassificationResponseSchema - structural violations', () => {
       secondaryCategories: [],
       confidence: validConfidence('Other'),
       rationale: baseRationale('Other'),
+      feedback: FEEDBACK,
       extraField: 'should not be allowed',
     };
     expect(CVClassificationResponseSchema.safeParse(payload).success).toBe(false);
@@ -113,6 +123,7 @@ describe('CVClassificationResponseSchema - business-rule refinements', () => {
       secondaryCategories: ['Other'],
       confidence: validConfidence('Other'),
       rationale: baseRationale('Other'),
+      feedback: FEEDBACK,
     };
     const result = CVClassificationResponseSchema.safeParse(payload);
     expect(result.success).toBe(false);
@@ -124,6 +135,7 @@ describe('CVClassificationResponseSchema - business-rule refinements', () => {
       secondaryCategories: ['PSS', 'PSS'],
       confidence: validConfidence('Other'),
       rationale: baseRationale('Other'),
+      feedback: FEEDBACK,
     };
     expect(CVClassificationResponseSchema.safeParse(payload).success).toBe(false);
   });
@@ -134,6 +146,7 @@ describe('CVClassificationResponseSchema - business-rule refinements', () => {
       secondaryCategories: [],
       confidence: validConfidence('Back-End Developer'),
       rationale: [{ category: 'Front-End Developer', evidence: 'irrelevant entry, not about the primary' }],
+      feedback: FEEDBACK,
     };
     expect(CVClassificationResponseSchema.safeParse(payload).success).toBe(false);
   });
@@ -146,6 +159,7 @@ describe('CVClassificationResponseSchema - business-rule refinements', () => {
       secondaryCategories: [],
       confidence,
       rationale: baseRationale('Other'),
+      feedback: FEEDBACK,
     };
     expect(CVClassificationResponseSchema.safeParse(payload).success).toBe(false);
   });
@@ -157,6 +171,7 @@ describe('CVClassificationResponseSchema - business-rule refinements', () => {
       secondaryCategories: ['PSS'],
       confidence,
       rationale: baseRationale('Other'),
+      feedback: FEEDBACK,
     };
     expect(CVClassificationResponseSchema.safeParse(payload).success).toBe(true);
   });

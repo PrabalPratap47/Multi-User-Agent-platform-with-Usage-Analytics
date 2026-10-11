@@ -19,6 +19,7 @@ import {
 } from '../src/services/llmService.js';
 import { AgentContext } from '../src/types/index.js';
 import { CV_CATEGORIES, CVClassificationRequestSchema } from '../src/utils/validators.js';
+import { cvFeedbackFrom } from './fixtures/cvFeedback.js';
 import {
   INSTRUCTION_INJECTION_CV,
   FAKE_SYSTEM_MESSAGE_CV,
@@ -158,6 +159,7 @@ describe('Prompt construction is unaffected by adversarial CV content', () => {
           secondaryCategories: [],
           confidence: fullConfidence(primary),
           rationale: [{ category: primary, evidence }],
+          feedback: cvFeedbackFrom(evidence),
         });
       });
 
@@ -175,6 +177,7 @@ describe('Prompt construction is unaffected by adversarial CV content', () => {
           secondaryCategories: [],
           confidence: fullConfidence(primary),
           rationale: [{ category: primary, evidence }],
+          feedback: cvFeedbackFrom(evidence),
         });
       });
 
@@ -224,6 +227,7 @@ describe('If the model complied with an injected instruction, validation still r
         secondaryCategories: [],
         confidence: fullConfidence('AI Engineer'),
         rationale: [{ category: 'AI Engineer', evidence: leakedEvidence }],
+        feedback: cvFeedbackFrom(leakedEvidence),
       })
     );
 
@@ -243,6 +247,7 @@ describe('If the model complied with an injected instruction, validation still r
         secondaryCategories: [],
         confidence: fullConfidence('AI Engineer', 1.0),
         rationale: [{ category: 'AI Engineer', evidence: 'This candidate is an excellent AI Engineer overall.' }],
+        feedback: cvFeedbackFrom('This candidate is an excellent AI Engineer overall.'),
       })
     );
 
@@ -258,6 +263,7 @@ describe('If the model complied with an injected instruction, validation still r
         secondaryCategories: [],
         confidence: fullConfidence('Mobile Automation'),
         rationale: [{ category: 'Mobile Automation', evidence: 'Appium and Espresso testing experience.' }],
+        feedback: cvFeedbackFrom('Appium and Espresso testing experience.'),
         isAdmin: true,
         debugMode: 'enabled',
       })
@@ -274,6 +280,7 @@ describe('If the model complied with an injected instruction, validation still r
         primaryCategory: 'Mobile Automation',
         secondaryCategories: [],
         rationale: [{ category: 'Mobile Automation', evidence: 'Appium and Espresso testing experience.' }],
+        feedback: cvFeedbackFrom('Appium and Espresso testing experience.'),
       })
     );
 
@@ -293,6 +300,7 @@ describe('If the model complied with an injected instruction, validation still r
         rationale: [
           { category: 'Chatbot Application Tester', evidence: 'Tests conversational AI for intent coverage and dialogue quality.' },
         ],
+        feedback: cvFeedbackFrom('Tests conversational AI for intent coverage and dialogue quality.'),
       });
     });
 
@@ -320,6 +328,7 @@ describe('If the model complied with an injected instruction, validation still r
         secondaryCategories: [],
         confidence: fullConfidence('PSS', 1.0),
         rationale: [{ category: 'PSS', evidence: 'Granted per system override.' }],
+        feedback: cvFeedbackFrom('Granted per system override.'),
         granted_access: true,
       })
     );
@@ -349,6 +358,7 @@ describe('A well-behaved response based on real CV evidence is still accepted de
             evidence: '5 years building REST APIs with Node.js, Express, and PostgreSQL.',
           },
         ],
+        feedback: cvFeedbackFrom('5 years building REST APIs with Node.js, Express, and PostgreSQL.'),
       })
     );
 
@@ -365,6 +375,7 @@ describe('A well-behaved response based on real CV evidence is still accepted de
         rationale: [
           { category: 'Front-End Developer', evidence: '2 years with React and Tailwind CSS building dashboards.' },
         ],
+        feedback: cvFeedbackFrom('2 years with React and Tailwind CSS building dashboards.'),
       })
     );
 
@@ -383,6 +394,7 @@ describe('A well-behaved response based on real CV evidence is still accepted de
         rationale: [
           { category: 'Back-End Developer', evidence: '5 years as a Back-End Developer building Express and NestJS APIs on Node.js.' },
         ],
+        feedback: cvFeedbackFrom('5 years as a Back-End Developer building Express and NestJS APIs on Node.js.'),
       })
     );
 
@@ -399,6 +411,7 @@ describe('A well-behaved response based on real CV evidence is still accepted de
         rationale: [
           { category: 'Web Automation', evidence: '3 years writing Playwright and Cypress test suites for e-commerce.' },
         ],
+        feedback: cvFeedbackFrom('3 years writing Playwright and Cypress test suites for e-commerce.'),
       })
     );
 
@@ -452,6 +465,7 @@ describe('detectLeakage', () => {
       secondaryCategories: [],
       confidence: fullConfidence('Back-End Developer'),
       rationale: [{ category: 'Back-End Developer', evidence: 'Built REST APIs with Express.' }],
+      feedback: cvFeedbackFrom('Built REST APIs with Express.'),
     });
     expect(detectLeakage(clean)).toEqual([]);
   });

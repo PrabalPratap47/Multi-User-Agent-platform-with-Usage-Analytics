@@ -1,5 +1,7 @@
 # Step 18 — Full End-to-End Test Report
 
+> **Historical report: real-OpenAI run of 2026-10-09.** It has not been re-run since. It predates the per-user AI rate limit, agent-run listing, PDF upload, CV feedback, the Skills Gap agent, admin-only deletions and admin user management; those were verified with stub providers and browser checks only (see the README's verification status).
+
 Every result below is classified **PASS**, **FAIL** or **NOT VERIFIED**. Every check says which provider it used:
 
 - **REAL OPENAI**: real calls to the OpenAI API through the production adapter.

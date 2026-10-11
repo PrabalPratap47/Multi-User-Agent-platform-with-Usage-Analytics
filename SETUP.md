@@ -24,7 +24,9 @@ cp .env.test.example .env.test    # testing     -> backend/data/test.db
 #    - the backend refuses to start with the template placeholder - and
 #    OPENAI_API_KEY to your key. Leave DATABASE_URL as it is.
 
-# 3. Create the development database and load the demo users
+# 3. Create the development database and load the demo users.
+#    NEW database only: db:setup deletes every row of an existing database.
+#    For an existing database: back it up, then run npm run db:migrate:deploy.
 npm run db:setup
 
 # 4. (optional) run the test suite - it creates its own test database
@@ -161,6 +163,13 @@ npm run db:setup
 #   npm run db:seed             (demo users + agents + clearly-marked demo records)
 ```
 
+> **Data safety.** `db:seed` (and therefore `db:setup`) **deletes every row** in
+> the target database before inserting the demo data, including accounts,
+> CVs, decisions and usage logs created since. Use `db:setup` only for a new
+> database. To update an existing database, back up `data/dev.db` (for
+> example copy it to `data/dev.db.backup`; `*.db.backup` files are
+> git-ignored) and run `npm run db:migrate:deploy`, which never deletes data.
+>
 > **After pulling new migrations**, the backend refuses to start until they are applied. It prints `Refusing to start: The database data/dev.db is behind the code: …` with the migration names and the command (`npm run db:migrate:deploy`). Back up `data/dev.db` first if its data matters. The startup check only reads the database; see docs/DATABASE.md, "Startup migration check".
 >
 > `db:migrate:deploy` applies existing migrations as-is. If you change
@@ -223,8 +232,11 @@ cd backend
 npm run dev
 ```
 
-Expected log lines (with timestamps):
+Expected log lines (with timestamps; the first two come from the startup
+schema check and run recovery):
 ```
+Database schema is up to date (6 migrations applied)
+No agent runs were left unfinished by a previous backend process
 Server running on http://localhost:3001
 Environment: development
 Frontend URL: http://localhost:5173
@@ -260,7 +272,8 @@ Expected output:
 
    The login page lists these only when served by the Vite dev server; a
    production build does not contain them. Never seed a shared or production
-   database.
+   database. If a password was changed in Admin → Users, the seeded one no
+   longer works for that account.
 
 ## Troubleshooting
 
@@ -324,9 +337,9 @@ npm run build
 npm run db:generate
 
 # Development database (data/dev.db)
-npm run db:setup            # create + migrate + seed
-npm run db:migrate:deploy   # apply migrations only
-npm run db:seed             # re-seed (deletes and recreates all rows)
+npm run db:setup            # NEW database: create + migrate + seed (deletes all rows)
+npm run db:migrate:deploy   # apply migrations only (keeps data; back up first)
+npm run db:seed             # re-seed (DELETES all rows, then inserts demo data)
 npm run db:migrate          # after editing schema.prisma: create a new migration
 npm run db:studio           # browse data in Prisma Studio
 
@@ -366,7 +379,8 @@ npm run db:studio
 Opens Prisma Studio at http://localhost:5555 for visual database management.
 
 ### Reset the Development Database
-Stop the backend, delete `backend/data/dev.db`, then:
+This discards all development data. Stop the backend, copy
+`backend/data/dev.db` somewhere safe if you may need it, delete it, then:
 ```bash
 cd backend
 npm run db:setup
@@ -393,16 +407,16 @@ DEBUG=prisma:* npm run dev
 
 ## Common Workflows
 
-### Add a Demo User
+### Add a User
 
-```bash
-# Edit backend/src/db/seed.ts, add new user, then:
-npm run db:seed
-```
+Log in as an admin → **ADMIN USERS** → **Create User** (name, email,
+password, role). This keeps all existing data. The same tab changes
+passwords and deletes (deactivates) users. Editing `seed.ts` and re-seeding
+also works, but deletes everything else.
 
 ### Clear All Data
 ```bash
-npm run db:seed   # the seed deletes all rows before inserting the demo data
+npm run db:seed   # DELETES all rows (accounts included), then inserts the demo data
 ```
 
 ### Check Token Validity
@@ -420,6 +434,5 @@ JSON.parse(localStorage.getItem('auth'))
    `backend/TESTING.md` (the browser checks need Google Chrome; the real-OpenAI
    scripts need an API key and cost money)
 
-See README.md for features and analytics definitions, docs/DATABASE.md for the
-data model, and ARCHITECTURE.md for the original design (read its
-implementation notes first).
+See ARCHITECTURE.md for how the system is built, README.md for features,
+endpoints and verification, and docs/DATABASE.md for the data model.

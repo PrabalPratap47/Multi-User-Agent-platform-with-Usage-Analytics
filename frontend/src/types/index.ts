@@ -63,6 +63,8 @@ export interface CvRecommendation {
   /** Confidence (0-1) for every category. */
   confidenceScores: Record<string, number>;
   rationale: CvRationaleEntry[];
+  /** 2-4 sentences of feedback about the CV; null for results classified before feedback existed. */
+  feedback?: string | null;
   createdAt: string;
   /** Present on GET /cv/results(/:id); absent on the immediate POST /cv/classify response. */
   cvDocument?: { fileName: string | null; batchId: string | null };
@@ -130,6 +132,7 @@ export const MAX_FEEDBACK_CHARS = 5000;
 export interface CvBatchFile {
   fileName: string;
   mimeType: string;
+  /** A .txt file's text, or a PDF's bytes base64-encoded (mimeType application/pdf). */
   content: string;
 }
 
@@ -166,8 +169,12 @@ export interface TokensByUser {
   email: string;
   totalInputTokens: number;
   totalOutputTokens: number;
+  /** totalInputTokens + totalOutputTokens, computed server-side. */
+  totalTokens: number;
   estimatedCost: number;
   callCount: number;
+  /** Calls whose provider sent no usage data (recorded as 0 tokens, never estimated). */
+  callsWithUnknownUsage: number;
 }
 
 export interface TokensByAgent {
@@ -175,8 +182,12 @@ export interface TokensByAgent {
   agentName: string;
   totalInputTokens: number;
   totalOutputTokens: number;
+  /** totalInputTokens + totalOutputTokens, computed server-side. */
+  totalTokens: number;
   estimatedCost: number;
   callCount: number;
+  /** Calls whose provider sent no usage data (recorded as 0 tokens, never estimated). */
+  callsWithUnknownUsage: number;
 }
 
 export interface AgentRunCounts {
@@ -211,6 +222,20 @@ export interface CategoryAcceptanceRate {
   modify: number;
   reject: number;
   acceptanceRate: number;
+}
+
+export interface CategoryFinalCounts {
+  category: string;
+  originalCount: number;
+  finalCount: number;
+}
+
+export interface FinalCategoryBreakdown {
+  decidedCvCount: number;
+  acceptedCount: number;
+  modifiedCount: number;
+  rejectedCount: number;
+  categories: CategoryFinalCounts[];
 }
 
 export interface TimeSavedEstimate {
@@ -270,9 +295,21 @@ export interface ExternalAgentStats {
 
 export interface UserSummary {
   id: number;
+  /** Full name (null for accounts created before names were recorded). */
+  name: string | null;
   email: string;
   role: Role;
   createdAt: string;
+  /** Deleted accounts are deactivated, not removed: they keep their history but cannot log in. */
+  status: 'active' | 'deactivated';
+  deactivatedAt: string | null;
+}
+
+export interface CreateUserRequest {
+  name: string;
+  email: string;
+  password: string;
+  role: Role;
 }
 
 export interface UsageLogRecord {
@@ -329,4 +366,60 @@ export interface AgentRunFilters {
   usage?: 'incomplete';
   limit?: number;
   offset?: number;
+}
+
+// ── CV Skills Extraction & Gap Analysis (mirrors backend/src/agents/skillsGap/schema.ts) ──
+export type SkillsGapRole =
+  | 'Front-End Developer'
+  | 'Back-End Developer'
+  | 'Web Automation Engineer'
+  | 'Mobile Automation Engineer'
+  | 'AI Engineer'
+  | 'Chatbot Application Tester'
+  | 'PSS'
+  | 'DCS';
+export type GapPriority = 'High' | 'Medium' | 'Low';
+
+export interface SkillsGapRoleInfo {
+  /** Stable id (e.g. "PSS"), sent to the API. */
+  role: SkillsGapRole;
+  /** Full name shown in the UI (e.g. "Passenger Service System"). */
+  label: string;
+  summary: string;
+  skills: Array<{ name: string; importance: 'high' | 'medium' | 'low'; description: string; gapPriority: GapPriority }>;
+}
+
+export interface SkillsGapGap {
+  skill: string;
+  status: 'not_demonstrated';
+  priority: GapPriority;
+  whyItMatters: string;
+  whatToUnderstand: string;
+  topics: string[];
+  practicalExercise: string;
+  miniProject: string | null;
+  completionCriterion: string;
+  estimatedLearningTime: { minHours: number; maxHours: number; isApproximate: true };
+}
+
+export interface SkillsGapResult {
+  targetRole: SkillsGapRole;
+  overallSummary: string;
+  demonstratedSkills: Array<{ skill: string; status: 'demonstrated'; evidence: string }>;
+  partiallyDemonstratedSkills: Array<{ skill: string; status: 'partially_demonstrated'; evidence: string; missingEvidence: string }>;
+  potentialGaps: SkillsGapGap[];
+  learningRoadmap: Array<{ stage: number; title: string; objective: string; topics: string[]; practicalTask: string; completionCriteria: string }>;
+  estimatedPreparationTime: { minWeeks: number; maxWeeks: number; hoursPerWeekAssumed: number; isApproximate: true; note: string };
+  limitations: string[];
+}
+
+export interface SkillsGapAnalysis {
+  id: number;
+  userId: number;
+  targetRole: SkillsGapRole;
+  cvFileName: string | null;
+  createdAt: string;
+  result: SkillsGapResult;
+  /** Owner, shown to an admin. */
+  user?: { email: string };
 }

@@ -2,11 +2,11 @@
 
 **Date:** 2026-10-07 · **Tool:** `npm audit` (npm workspaces, root lockfile) · **Result:** 22 vulnerabilities (2 critical, 16 high, 4 moderate). **None affects the running application.**
 
-**Re-checked 2026-10-09** with `npm audit` (read-only, no fix applied): unchanged.
+**Re-checked 2026-10-09 and 2026-10-11** with `npm audit` (read-only, no fix applied): unchanged.
 
 - All dependencies: 22 (2 critical, 16 high, 4 moderate).
 - `npm audit --omit=dev`: 3 high (the Prisma CLI chain below).
-- `playwright-core`, added later as a backend dev dependency for the browser checks, adds no findings.
+- Dependencies added later add no findings: `playwright-core` (backend dev dependency for the browser checks), `pdfjs-dist` (backend, PDF text extraction) and `recharts` (frontend charts).
 
 No dependency versions were changed for these findings. `npm audit` offers no non-breaking fix for any of them: every fix is a major-version upgrade, or (for Prisma) a downgrade out of the declared range. `npm audit fix --force` was deliberately **not** run.
 
@@ -56,7 +56,7 @@ No dependency versions were changed for these findings. `npm audit` offers no no
 ## Why these are accepted for now
 
 - **No attacker-controlled input reaches any vulnerable code.** Glob patterns, CSS selectors, tinypool options and Prisma config objects all come from this repository's own source and config files, never from HTTP requests.
-- **The production surface** is the Express backend (Express, Prisma Client, OpenAI SDK, jsonwebtoken, bcryptjs, zod, winston, cors, dotenv) plus the static frontend build. None of these has an open advisory.
+- **The production surface** is the Express backend (Express, Prisma Client, OpenAI SDK, jsonwebtoken, bcryptjs, zod, winston, cors, dotenv, pdfjs-dist) plus the static frontend build. None of these has an open advisory.
 - **The Prisma downgrade to 6.12.0 is not taken.** It would move CLI and client back 7 minor versions purely to silence a CLI-only finding that can't be reached, and would need full re-verification of the SQLite setup.
 
 ## Required precautions (until upgraded)
@@ -70,7 +70,7 @@ No dependency versions were changed for these findings. `npm audit` offers no no
 
 | Upgrade | Clears | Notes |
 |---|---|---|
-| vitest 1 → 5 | 3 (2 critical) | Config and API changes; re-run all 181 tests |
+| vitest 1 → 5 | 3 (2 critical) | Config and API changes; re-run the whole test suite |
 | typescript-eslint 6 → 8 (with ESLint 8 → 9, flat config) | 7 | Requires migrating both `.eslintrc.json` files to `eslint.config.js` |
 | vite 5 → 6.4.2+ (and `@vitejs/plugin-react`) | 2 | Frontend dev server and build changes |
 | tailwindcss 3 → 4 | 7 | New configuration model; re-check all styling |

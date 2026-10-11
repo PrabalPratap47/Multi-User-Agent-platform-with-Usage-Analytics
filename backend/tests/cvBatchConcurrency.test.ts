@@ -22,6 +22,7 @@ import {
 import { LLMService, type LLMProviderRequest, type LLMProviderResponse } from '../src/services/llmService.js';
 import { MAX_CONCURRENT_BATCH_FILES, runWithConcurrencyLimit } from '../src/services/cvBatchService.js';
 import { CV_CATEGORIES } from '../src/utils/validators.js';
+import { cvFeedbackFrom } from './fixtures/cvFeedback.js';
 
 const EMAILS = { userA: 'batch-cap-user-a@test.local', userB: 'batch-cap-user-b@test.local' } as const;
 const EVIDENCE = 'Node.js and Express backend engineer';
@@ -78,6 +79,7 @@ function validJson(): string {
     secondaryCategories: [],
     confidence,
     rationale: [{ category: 'Back-End Developer', evidence: EVIDENCE }],
+    feedback: cvFeedbackFrom(EVIDENCE),
   });
 }
 
@@ -233,7 +235,7 @@ describe('batch processing - concurrency cap', () => {
     const provider = gatedProvider();
     provider.install();
     const files = [
-      { fileName: 'bad-type.pdf', mimeType: 'application/pdf', content: cvText(1) },
+      { fileName: 'bad-type.doc', mimeType: 'application/msword', content: cvText(1) },
       { fileName: 'provider-fail-1.txt', content: cvText(2, 'PROVIDER_FAIL') },
       { fileName: 'ok-1.txt', content: cvText(3) },
       { fileName: 'too-short.txt', content: 'tiny' },
@@ -269,7 +271,7 @@ describe('batch processing - concurrency cap', () => {
     expect(final).toMatchObject({ total: 9, completed: 3, failed: 6, queued: 0, processing: 0, percentage: 100 });
     const byName = Object.fromEntries(final.items.map((i: { fileName: string }) => [i.fileName, i])) as Record<string, { state: string; error: string | null; recommendationId: number | null; runId: string }>;
     for (const ok of ['ok-1.txt', 'ok-2.txt', 'ok-3.txt']) expect(byName[ok]).toMatchObject({ state: 'completed', error: null });
-    expect(byName['bad-type.pdf'].error).toMatch(/Unsupported file type/);
+    expect(byName['bad-type.doc'].error).toMatch(/Unsupported file type/);
     expect(byName['too-short.txt'].error).toMatch(/too short/);
     expect(byName['binary.txt'].error).toMatch(/does not appear to be valid decoded text/);
     expect(byName['bad-output.txt'].error).toMatch(/did not pass validation/);
@@ -278,7 +280,7 @@ describe('batch processing - concurrency cap', () => {
 
     // Usage rows: one per provider call, attached to the right run.
     const logsFor = async (name: string) => prisma.llmUsageLog.findMany({ where: { runId: byName[name].runId } });
-    for (const name of ['bad-type.pdf', 'too-short.txt', 'binary.txt']) expect(await logsFor(name)).toHaveLength(0);
+    for (const name of ['bad-type.doc', 'too-short.txt', 'binary.txt']) expect(await logsFor(name)).toHaveLength(0);
     for (const name of ['ok-1.txt', 'ok-2.txt', 'ok-3.txt']) expect((await logsFor(name)).map(l => l.status)).toEqual(['SUCCESS']);
     for (const name of ['provider-fail-1.txt', 'provider-fail-2.txt']) {
       expect((await logsFor(name)).map(l => [l.status, l.errorCode])).toEqual([['ERROR', 'HTTP_503']]);

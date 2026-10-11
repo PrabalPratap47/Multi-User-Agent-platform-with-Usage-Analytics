@@ -3,8 +3,9 @@ import prisma from '../db/client.js';
 import { Errors } from '../middleware/errorHandler.js';
 import { UserPayload, AgentContext } from '../types/index.js';
 import { cvClassificationAgent, CV_CLASSIFICATION_AGENT_NAME } from '../agents/CVClassificationAgent.js';
-import { validateCVClassificationRequest } from '../utils/validators.js';
-import { toSafeRunErrorMessage } from './cvBatchService.js';
+import { validateCVClassificationRequest, validatePdfClassificationRequest } from '../utils/validators.js';
+import { extractPdfText } from '../utils/pdfText.js';
+import { MAX_FILE_CONTENT_LENGTH, MIN_FILE_CONTENT_LENGTH, toSafeRunErrorMessage } from './cvBatchService.js';
 import logger from '../config/logging.js';
 
 // The original recommendation is returned unchanged; the document's name and
@@ -71,6 +72,17 @@ export class CvClassificationService {
     return this.runClassification(user, document);
   }
 
+  /**
+   * The same, for one PDF CV: its text is extracted (PdfExtractionError for
+   * an unusable PDF, before anything is stored) and then classified exactly
+   * like a .txt CV's content.
+   */
+  static async classifyPdf(user: UserPayload, params: unknown) {
+    const { pdfBase64, fileName } = validatePdfClassificationRequest(params);
+    const cvContent = await extractPdfText(pdfBase64, { minChars: MIN_FILE_CONTENT_LENGTH, maxChars: MAX_FILE_CONTENT_LENGTH });
+    return this.classifyContent(user, { cvContent, fileName });
+  }
+
   private static async runClassification(
     user: UserPayload,
     document: { id: number; userId: number; content: string }
@@ -108,6 +120,7 @@ export class CvClassificationService {
           confidenceScore: result.confidence[result.primaryCategory],
           confidenceScores: result.confidence as unknown as Prisma.InputJsonValue,
           rationale: result.rationale as unknown as Prisma.InputJsonValue,
+          feedback: result.feedback,
           rawResponse: result.rawResponse as Prisma.InputJsonValue,
         },
       });
@@ -133,6 +146,43 @@ export class CvClassificationService {
 
       throw error;
     }
+  }
+
+  /**
+   * Permanently deletes one CV document: its stored text, its
+   * recommendations and every decision on them. Its agent runs are kept
+   * (unlinked from the document, as the schema's SET NULL does) together
+   * with their usage logs, which hold no CV content - so token, cost and
+   * run history stay exact. Admin only (the route also requires an admin);
+   * regular users cannot delete anything, not even their own CVs.
+   */
+  static async deleteDocument(user: UserPayload, documentId: number) {
+    if (user.role !== 'admin') {
+      throw Errors.forbidden('Only an admin can delete CV documents');
+    }
+    const document = await prisma.cvDocument.findUnique({ where: { id: documentId }, select: { id: true, userId: true } });
+    if (!document) {
+      throw Errors.notFound('CV document');
+    }
+    // A queued or running file would otherwise fail (or race) mid-processing.
+    const inProgress = await prisma.agentRun.count({ where: { cvDocumentId: documentId, status: { in: ['PENDING', 'RUNNING'] } } });
+    if (inProgress > 0) {
+      throw Errors.conflict('This CV is still being processed. Try again when processing has finished.');
+    }
+
+    const result = await prisma.$transaction(async tx => {
+      const decisions = await tx.recommendationDecision.deleteMany({
+        where: { OR: [{ cvDocumentId: documentId }, { recommendation: { cvDocumentId: documentId } }] },
+      });
+      const recommendations = await tx.cvRecommendation.deleteMany({ where: { cvDocumentId: documentId } });
+      const runs = await tx.agentRun.updateMany({ where: { cvDocumentId: documentId }, data: { cvDocumentId: null } });
+      await tx.cvDocument.delete({ where: { id: documentId } });
+      return { documentId, deletedRecommendations: recommendations.count, deletedDecisions: decisions.count, keptAgentRuns: runs.count };
+    });
+
+    // Ids and counts only - never the file name or content.
+    logger.info('CV document permanently deleted', { ...result, deletedBy: user.id, ownerId: document.userId });
+    return result;
   }
 
   /** Retrieving the result: a single recommendation, ownership-enforced. */

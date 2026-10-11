@@ -80,6 +80,14 @@ export class AnalyticsController {
     res.json({ success: true, data: rates } as ApiResponse);
   });
 
+  /** GET /api/analytics/final-categories - metric 10b: original AI recommendation vs final category */
+  static getFinalCategories = asyncHandler(async (req: Request, res: Response) => {
+    if (!req.user) throw Errors.unauthorized();
+
+    const breakdown = await AnalyticsService.getFinalCategoryBreakdown(req.user, parseOptionalUserId(req.query.userId));
+    res.json({ success: true, data: breakdown } as ApiResponse);
+  });
+
   /** GET /api/analytics/time-saved - metric 11: ESTIMATED time saved in person-hours */
   static getTimeSaved = asyncHandler(async (req: Request, res: Response) => {
     if (!req.user) throw Errors.unauthorized();

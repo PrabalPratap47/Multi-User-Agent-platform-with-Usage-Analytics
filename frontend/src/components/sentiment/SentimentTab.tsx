@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useId, useRef, useState, type FormEvent } from 'react';
 import { sentimentService } from '../../services/sentimentService.js';
 import { useAsyncData } from '../../hooks/useAsyncData.js';
 import { useAuthStore } from '../../store/authStore.js';
@@ -6,6 +6,8 @@ import { apiErrorMessage } from '../../utils/apiError.js';
 import { MAX_FEEDBACK_CHARS, type SentimentLabel, type SentimentResult } from '../../types/index.js';
 import { EmptyState, ErrorState, LoadingState, SectionCard } from '../analytics/AnalyticsPrimitives.js';
 import { ProgressBar, formatConfidence } from '../cv/cvUi.js';
+import { DonutChart } from '../charts/DonutChart.js';
+import { SENTIMENT_COLORS } from '../charts/chartColors.js';
 
 const SENTIMENT_STYLES: Record<SentimentLabel, { label: string; className: string; bar: string }> = {
   POSITIVE: { label: 'Positive', className: 'bg-green-50 text-green-800 border-green-200', bar: 'bg-green-500' },
@@ -103,7 +105,7 @@ function AnalyzeForm({ onAnalyzed }: { onAnalyzed: (result: SentimentResult) => 
             rows={5}
             aria-invalid={!!shownError}
             aria-describedby="feedback-help"
-            placeholder="Paste a customer review, survey answer or support message..."
+            placeholder="Feedback text from CV Processing should be pasted here or generated from your understanding."
             className={`mt-1 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 ${
               shownError ? 'border-red-400' : 'border-gray-300'
             }`}
@@ -143,7 +145,28 @@ function AnalyzeForm({ onAnalyzed }: { onAnalyzed: (result: SentimentResult) => 
   );
 }
 
-function HistoryItem({ result, showOwner }: { result: SentimentResult; showOwner: boolean }) {
+/** `canDelete` (admin only, also enforced by the server) shows the Delete action. */
+function HistoryItem({ result, showOwner, canDelete, onDeleted }: { result: SentimentResult; showOwner: boolean; canDelete: boolean; onDeleted: (id: number) => void }) {
+  const dialog = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // The review leaves the list only after the server confirms the deletion.
+  const confirmDelete = async () => {
+    setDeleting(true);
+    setError(null);
+    try {
+      await sentimentService.deleteResult(result.id);
+      dialog.current?.close();
+      onDeleted(result.id);
+    } catch (err) {
+      setError(apiErrorMessage(err, 'The review could not be deleted. Nothing was removed.'));
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   return (
     <li className="space-y-2 py-3">
       <div className="flex flex-wrap items-center gap-2">
@@ -153,7 +176,65 @@ function HistoryItem({ result, showOwner }: { result: SentimentResult; showOwner
           #{result.id} · {new Date(result.createdAt).toLocaleString()}
           {showOwner && result.user && <> · {result.user.email}</>}
         </span>
+        {canDelete && (
+          <button
+            type="button"
+            onClick={() => {
+              setError(null);
+              dialog.current?.showModal();
+            }}
+            aria-label={`Delete sentiment result #${result.id}`}
+            className="ml-auto rounded-md border border-red-200 bg-white px-3 py-1 text-sm font-medium text-red-700 hover:bg-red-50"
+          >
+            Delete
+          </button>
+        )}
       </div>
+      {canDelete && (
+        <dialog
+          ref={dialog}
+          aria-labelledby={titleId}
+          onCancel={e => {
+            if (deleting) e.preventDefault();
+          }}
+          className="w-[calc(100%-2rem)] max-w-md rounded-lg p-0 shadow-xl backdrop:bg-gray-900/50"
+        >
+          <div className="space-y-3 p-5">
+            <h4 id={titleId} className="text-lg font-semibold text-gray-900">
+              Delete this review permanently?
+            </h4>
+            <p className="text-sm text-gray-700">
+              Sentiment result <strong>#{result.id}</strong> ({SENTIMENT_STYLES[result.sentiment]?.label ?? result.sentiment})
+              {result.user && <> from {result.user.email}</>} and its feedback text will be removed from the results and the sentiment
+              chart. This cannot be undone.
+            </p>
+            <p className="line-clamp-2 break-words text-sm italic text-gray-600">“{result.inputText}”</p>
+            {error && (
+              <p role="alert" className="rounded border border-red-200 bg-red-50 p-2 text-sm text-red-700">
+                {error}
+              </p>
+            )}
+            <div className="flex flex-wrap justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => dialog.current?.close()}
+                disabled={deleting}
+                className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => void confirmDelete()}
+                disabled={deleting}
+                className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                {deleting ? 'Deleting...' : 'Delete permanently'}
+              </button>
+            </div>
+          </div>
+        </dialog>
+      )}
       <p className="line-clamp-2 break-words text-sm text-gray-800" title={result.inputText}>
         “{result.inputText}”
       </p>
@@ -164,10 +245,42 @@ function HistoryItem({ result, showOwner }: { result: SentimentResult; showOwner
   );
 }
 
+/**
+ * The stored AI sentiment of each saved result (there are no user decisions
+ * on sentiment). Only completed runs have a saved result, so pending runs are
+ * never counted; anything outside the three labels is ignored.
+ */
+function SentimentBreakdown({ results }: { results: SentimentResult[] }) {
+  const count = (label: SentimentLabel) => results.filter(r => r.sentiment === label).length;
+  const segments = (['POSITIVE', 'NEGATIVE', 'NEUTRAL'] as const).map(label => ({
+    key: label,
+    label: SENTIMENT_STYLES[label].label,
+    value: count(label),
+    color: SENTIMENT_COLORS[label],
+  }));
+  return (
+    <div className="mb-6 border-b border-gray-200 pb-6">
+      <h3 className="font-bold text-gray-800">Sentiment breakdown</h3>
+      <p className="mt-0.5 mb-4 text-sm font-medium text-gray-600">AI sentiment of every saved result.</p>
+      <DonutChart label="Sentiment breakdown" totalLabel={segments.reduce((s, x) => s + x.value, 0) === 1 ? 'result' : 'results'} segments={segments} />
+    </div>
+  );
+}
+
 export function SentimentTab() {
   const isAdmin = useAuthStore(state => state.user?.role === 'admin');
   const [version, setVersion] = useState(0);
   const history = useAsyncData(() => sentimentService.listResults(), [version]);
+  // Hidden as soon as the server confirms a deletion, until the refreshed list arrives without them.
+  const [deletedIds, setDeletedIds] = useState<number[]>([]);
+  const [notice, setNotice] = useState<string | null>(null);
+  const visible = history.data?.filter(r => !deletedIds.includes(r.id)) ?? null;
+
+  const handleDeleted = (id: number) => {
+    setDeletedIds(ids => [...ids, id]);
+    setNotice(`Sentiment result #${id} was deleted.`);
+    setVersion(v => v + 1);
+  };
 
   return (
     <div className="space-y-6">
@@ -175,27 +288,38 @@ export function SentimentTab() {
         title="Analyze feedback"
         description="The AI labels the feedback Positive, Neutral or Negative, with a confidence score and a short rationale. Every result is saved to your account."
       >
-        <AnalyzeForm onAnalyzed={() => setVersion(v => v + 1)} />
+        <AnalyzeForm
+          onAnalyzed={() => {
+            setNotice(null);
+            setVersion(v => v + 1);
+          }}
+        />
       </SectionCard>
 
       <SectionCard
         title={isAdmin ? 'All users’ sentiment results' : 'Your sentiment results'}
         description={isAdmin ? 'As an admin you see every user’s results, newest first.' : 'Newest first.'}
       >
+        {notice && (
+          <p role="status" className="mb-4 rounded border border-green-200 bg-green-50 p-2 text-sm text-green-800">
+            {notice}
+          </p>
+        )}
         {history.loading && !history.data && <LoadingState label="Loading results..." />}
         {history.error && <ErrorState message={history.error} onRetry={history.reload} />}
-        {history.data && history.data.length === 0 && (
+        {visible && visible.length === 0 && (
           <EmptyState message="No feedback has been analyzed yet. Enter some feedback above to get started." />
         )}
-        {history.data && history.data.length > 0 && (
+        {visible && visible.length > 0 && (
           <>
+            <SentimentBreakdown results={visible} />
             <p className="text-sm text-gray-600">
-              {history.data.length} result{history.data.length === 1 ? '' : 's'}
+              {visible.length} result{visible.length === 1 ? '' : 's'}
               {history.loading && <span className="ml-2 text-gray-500">Refreshing...</span>}
             </p>
             <ul className="divide-y divide-gray-100">
-              {history.data.map(result => (
-                <HistoryItem key={result.id} result={result} showOwner={isAdmin} />
+              {visible.map(result => (
+                <HistoryItem key={result.id} result={result} showOwner={isAdmin} canDelete={isAdmin} onDeleted={handleDeleted} />
               ))}
             </ul>
           </>

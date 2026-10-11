@@ -1,6 +1,6 @@
 # Demo Runbook (Windows PowerShell)
 
-A live, step-by-step demonstration of the Multi-User Agent Platform: four accounts, both AI agents, concurrent use, isolation, decisions, batch partial failure, analytics, Agent Runs, incomplete-usage warnings, rate limiting and interrupted-run recovery.
+A live, step-by-step demonstration of the Multi-User Agent Platform: four accounts, the CV Classification and Sentiment agents (the SKILLS GAP ANALYSIS tab can be shown the same way; its cost per call has not been measured, and it allows up to 4,096 output tokens instead of 1,024), concurrent use, isolation, decisions, batch partial failure, analytics, Agent Runs, incomplete-usage warnings, rate limiting and interrupted-run recovery.
 
 **The demo runs on its own database, `backend/data/demo.db`** (git-ignored). Your development database `backend/data/dev.db` and its backup `dev.db.backup` are never opened or changed. Every command below that touches a database sets `DATABASE_URL` first.
 
@@ -32,7 +32,7 @@ $env:DATABASE_URL          # must print file:../data/demo.db - do not continue o
 npm run db:setup
 ```
 
-- **Expected output:** 3 migrations applied, then `✅ Database seeded successfully!`.
+- **Expected output:** 6 migrations applied, then `✅ Database seeded successfully!`.
 - **Warning:** `db:setup` and `db:seed` **delete all rows** in the target database before seeding. Run them only in a window where `$env:DATABASE_URL` prints the demo path. Without it they target `dev.db`.
 - **Re-running** `npm run db:setup` (with the variable set) resets the demo for a fresh rehearsal.
 
@@ -62,7 +62,7 @@ npm run dev
 
 Expected log lines, in this order:
 
-1. `Database schema is up to date (3 migrations applied)`
+1. `Database schema is up to date (6 migrations applied)`
 2. `No agent runs were left unfinished by a previous backend process`
 3. `Server running on http://localhost:3001`
 
@@ -79,11 +79,11 @@ The app opens at **http://localhost:5173**. The login page lists the demo accoun
 
 ## 3. Demo sequence
 
-Each user starts with one seeded record, a CV or sentiment result that already exists before you classify anything. AGENT RUNS labels it **Demo data**; the CV PROCESSING and SENTIMENT lists do not, so point it out. It is excluded from analytics; don't present it as a live result. AI outputs (categories, confidences, sentiment) come from the real model and can vary; the expected results below describe what is shown, not exact values.
+Each regular demo user starts with one seeded record, a CV or sentiment result that already exists before you classify anything. AGENT RUNS labels it **Demo data**; the CV PROCESSING and SENTIMENT lists do not, so point it out. It is excluded from analytics; don't present it as a live result. AI outputs (categories, confidences, sentiment) come from the real model and can vary; the expected results below describe what is shown, not exact values.
 
 | # | Who | Action | Expected result |
 |---|---|---|---|
-| 1 | user1 | Sign in | Tabs: ANALYTICS, MY RECORDS, AGENT RUNS, CV PROCESSING, SENTIMENT, EXTERNAL LOGS. No ADMIN USERS. |
+| 1 | user1 | Sign in | Tabs: ANALYTICS, MY RECORDS, AGENT RUNS, CV PROCESSING, SENTIMENT, SKILLS GAP ANALYSIS, EXTERNAL LOGS. No ADMIN USERS, and no Delete buttons anywhere. |
 | 2 | user1 | **CV PROCESSING** → choose `jane-backend.txt` → **Classify CV** | A result card: a primary category (one of the 9), optional secondary categories, a 0–1 confidence per category, and a rationale quoting the CV. |
 | 3 | user1 | On the result: choose **ACCEPT** → **Submit decision**. Classify `alex-frontend.txt`, choose **MODIFY** or **REJECT** and try **Submit decision** with no reason. | ACCEPT is saved and badged. MODIFY/REJECT are refused until you enter a reason; then they are saved, and the original recommendation stays visible. |
 | 4 | user1 | **SENTIMENT** → type feedback (e.g. "The support team was quick and very helpful.") → **Analyze sentiment** | Positive/negative/neutral, a confidence and a rationale. |
@@ -95,7 +95,7 @@ Each user starts with one seeded record, a CV or sentiment result that already e
 | 10 | user2 | Optional explicit denial (section 3.1) | Opening user1's run as user2 returns **403**; `?userId=` does not widen user2's list. |
 | 11 | admin | **ANALYTICS** | Global totals: input/output tokens, estimated cost, by user, by agent, runs 24h/7d/30d, successful/failed runs, error rate, latency, acceptance rate per category, time saved (labelled **ESTIMATED**). "Usage data complete" when nothing is missing. |
 | 12 | admin | **AGENT RUNS** | Every user's runs, with User, Agent, Status and **Usage data** filters, and per-run **Details**. |
-| 13 | admin | **ADMIN USERS** | All four accounts. |
+| 13 | admin | **ADMIN USERS** | The token-usage bar chart and all four accounts. Optionally **Create User**, **Change password** or **Delete user** (a soft delete: the account can no longer log in, its data stays). These change only `demo.db`. |
 | 14 | admin | **EXTERNAL LOGS** → Source agent name (e.g. "Legacy Screening Bot") → file `docs\samples\external-agent-logs-valid.json` → **Import** | Shown in its own tab (records, tokens, cost, errors, latency, per-agent breakdown); not mixed into the internal analytics. |
 
 ### 3.1 Optional: explicit cross-user denial (PowerShell)
@@ -166,7 +166,7 @@ npm run dev
 
 ## 7. Limitations to state honestly
 
-- **Real-provider evidence is dated.** The recorded real-OpenAI runs (E2E, logging accuracy, CV evaluation, prompt injection) are from 2026-10-08/09, before the latest hardening changes: usage-log failure reporting, batch cap, rate limit, run listing, startup checks. Those changes are covered by 415 automated tests with stub providers and by browser checks, but no new paid run has been made since.
+- **Real-provider evidence is dated.** The recorded real-OpenAI runs (E2E, logging accuracy, CV evaluation, prompt injection) are from 2026-10-08/09. They predate the hardening changes (usage-log failure reporting, batch cap, rate limit, run listing, startup checks) and the later features (PDF upload, CV feedback, the Skills Gap agent, deletions, user management). Those are covered by automated tests with stub providers and by browser checks; no new paid run has been made since. The Skills Gap agent has never been run against the real model.
 - **Evaluation set is small.** CV evaluation is 27 labelled samples (3 per category); precision/recall of 1.0 is not representative of real-world accuracy.
 - **Time saved is an estimate.** It uses an assumed 5-minute manual review baseline.
 - **Limits and protection are in memory.** The rate limit and the login throttle are per process and reset on restart. Sign-in tokens are stored in the browser's `localStorage`. There is no Content-Security-Policy.

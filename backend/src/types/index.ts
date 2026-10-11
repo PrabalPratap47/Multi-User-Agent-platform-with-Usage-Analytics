@@ -11,7 +11,7 @@ export type DecisionType = 'ACCEPT' | 'MODIFY' | 'REJECT';
 export type RunStatus = 'PENDING' | 'RUNNING' | 'SUCCESS' | 'ERROR';
 
 // These stay lowercase at the API boundary (matching the LLM's own JSON
-// output contract in promptInjectionDefense.ts and the Zod schemas in
+// output contract in agents/sentiment/schema.ts and the Zod schemas in
 // validators.ts); the Prisma enums are uppercase, converted explicitly
 // wherever a value crosses that boundary - see authService.toPayload for
 // the equivalent pattern used for Role.

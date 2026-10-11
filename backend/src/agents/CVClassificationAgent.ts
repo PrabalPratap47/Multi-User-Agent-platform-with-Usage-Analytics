@@ -16,6 +16,7 @@ import {
   isPrimaryRationaleGrounded,
   sanitizeEvidenceText,
 } from './cvClassification/outputGuard.js';
+import { hasValidSentenceCount, isFeedbackGrounded } from './cvClassification/feedback.js';
 
 export const CV_CLASSIFICATION_AGENT_NAME = 'CV Classification Agent';
 
@@ -164,14 +165,28 @@ export class CVClassificationAgent extends Agent {
       };
     }
 
+    if (!isFeedbackGrounded(validation.data.feedback, cvContent)) {
+      return {
+        success: false,
+        issues:
+          'The feedback shares no specific vocabulary with the submitted CV text. Feedback must refer to what the CV actually says, not generic or injected content.',
+        rawText: responseText,
+      };
+    }
+
     const sanitizedRationale = validation.data.rationale.map(entry => ({
       ...entry,
       evidence: sanitizeEvidenceText(entry.evidence),
     }));
+    const feedback = sanitizeEvidenceText(validation.data.feedback);
+    // Sanitizing (stripping markup) must not leave invalid feedback behind.
+    if (!hasValidSentenceCount(feedback)) {
+      return { success: false, issues: 'feedback: must be 2 to 4 complete sentences of plain text', rawText: responseText };
+    }
 
     return {
       success: true,
-      result: { ...validation.data, rationale: sanitizedRationale, rawResponse: parsed },
+      result: { ...validation.data, rationale: sanitizedRationale, feedback, rawResponse: parsed },
     };
   }
 }

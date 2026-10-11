@@ -2,11 +2,13 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { cvService } from '../../services/cvService.js';
 import { useAsyncData } from '../../hooks/useAsyncData.js';
 import { apiErrorMessage } from '../../utils/apiError.js';
+import { PDF_MIME_TYPE } from '../../utils/cvFiles.js';
 import type { CvBatchFile } from '../../types/index.js';
 import { EmptyState, ErrorState, LoadingState, SectionCard } from '../analytics/AnalyticsPrimitives.js';
 import { CvUploadPanel, type RejectedFile } from './CvUploadPanel.js';
 import { ProcessingJobView, type CvJob } from './ProcessingJobView.js';
 import { RecommendationCard } from './RecommendationCard.js';
+import { FinalDecisionsTreemap } from '../charts/FinalDecisionsTreemap.js';
 
 const POLL_INTERVAL_MS = 1500;
 const MAX_CONSECUTIVE_POLL_FAILURES = 3;
@@ -68,7 +70,11 @@ export function CvProcessingTab() {
   const startSingle = async (file: CvBatchFile, rejected: RejectedFile[]) => {
     setJob({ kind: 'single', fileName: file.fileName, state: 'processing', upload: null, error: null, recommendationId: null, rejected });
     try {
-      const recommendation = await cvService.classify({ cvContent: file.content, fileName: file.fileName }, upload =>
+      const params =
+        file.mimeType === PDF_MIME_TYPE
+          ? { pdfBase64: file.content, fileName: file.fileName }
+          : { cvContent: file.content, fileName: file.fileName };
+      const recommendation = await cvService.classify(params, upload =>
         setJob(j => (j?.kind === 'single' ? { ...j, upload } : j))
       );
       setJob(j => (j?.kind === 'single' ? { ...j, state: 'completed', recommendationId: recommendation.id } : j));
@@ -168,6 +174,13 @@ export function CvProcessingTab() {
         <CvUploadPanel busy={busy} onSubmit={handleSubmit} />
       </SectionCard>
 
+      {/* Counted from the same results as the list below, so it refreshes with it. */}
+      <SectionCard title="Final Decisions by Domain" description="Final category of each reviewed CV, from your saved decisions.">
+        {results.loading && !results.data && <LoadingState label="Loading final decisions..." />}
+        {results.error && !results.data && <ErrorState message={results.error} onRetry={results.reload} />}
+        {results.data && <FinalDecisionsTreemap results={results.data} />}
+      </SectionCard>
+
       {job && (
         <SectionCard title={job.kind === 'single' ? 'Processing' : 'Batch processing'}>
           <ProcessingJobView job={job} onRetryTracking={retryTracking} />
@@ -193,7 +206,13 @@ export function CvProcessingTab() {
               {results.loading && <span className="ml-2 text-gray-500">Refreshing...</span>}
             </p>
             {results.data.map(rec => (
-              <RecommendationCard key={rec.id} recommendation={rec} highlighted={highlightIds.includes(rec.id)} onDecided={refreshResults} />
+              <RecommendationCard
+                key={rec.id}
+                recommendation={rec}
+                highlighted={highlightIds.includes(rec.id)}
+                onDecided={refreshResults}
+                onDeleted={refreshResults}
+              />
             ))}
           </div>
         )}

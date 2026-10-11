@@ -1,5 +1,13 @@
 # UI/UX Review (Step 19)
 
+> **Historical report (2026-10-09).** It describes the UI and results at that date. Since then:
+>
+> - Recharts charts were added: the analytics doughnut, the CV treemap, the sentiment doughnut and the admin token-usage bar chart. The "No charts" limitation below no longer applies.
+> - New tabs and features were added: SKILLS GAP ANALYSIS, PDF upload, CV feedback, deletion actions and admin user management.
+> - `npm run verify:ui` grew to 85 checks; the last run was 2026-10-11 (85/85, `evaluation/ui-verification-results.json`).
+>
+> The other limitations below still apply.
+
 This step changed the frontend only. Backend business logic, API contracts, authentication, RBAC and the Step 17 security fixes are unchanged. Every dashboard value still comes from the analytics API. No real OpenAI calls were made; browser runs used a CONTROLLED provider.
 
 ## Areas inspected

@@ -101,6 +101,26 @@ export interface CategoryAcceptanceRate {
   acceptanceRate: number;
 }
 
+export interface CategoryFinalCounts {
+  category: string;
+  /** Decided CVs the agent originally recommended for this category. */
+  originalCount: number;
+  /** Decided CVs whose latest decision has this as the final category (ACCEPT or MODIFY). */
+  finalCount: number;
+}
+
+export interface FinalCategoryBreakdown {
+  /** CVs with at least one decision; each counts once, by its latest decision. */
+  decidedCvCount: number;
+  /** Decided CVs whose latest decision is ACCEPT. */
+  acceptedCount: number;
+  /** Decided CVs whose latest decision is MODIFY. */
+  modifiedCount: number;
+  /** Decided CVs whose latest decision is REJECT: no final category was selected. */
+  rejectedCount: number;
+  categories: CategoryFinalCounts[];
+}
+
 export interface UsageCompletenessCounts {
   /** Calls whose provider returned no usage: recorded as 0 tokens / 0 cost, real values unknown. */
   callsWithUnknownUsage: number;
@@ -162,18 +182,33 @@ export class AnalyticsService {
       _count: { _all: true },
     });
 
+    // Calls whose provider sent no usage are stored as 0 tokens, never estimated;
+    // counted per user so the totals can be labelled as incomplete.
+    const unknownUsage = await prisma.llmUsageLog.groupBy({
+      by: ['userId'],
+      where: { ...REAL_USAGE_FILTER, ...unknownUsageCallWhere },
+      _count: { _all: true },
+    });
+    const unknownByUser = new Map(unknownUsage.map(u => [u.userId, u._count._all]));
+
     const userIds = grouped.map(g => g.userId);
     const users = await prisma.user.findMany({ where: { id: { in: userIds } }, select: { id: true, email: true } });
     const emailById = new Map(users.map(u => [u.id, u.email]));
 
-    return grouped.map(g => ({
-      userId: g.userId,
-      email: emailById.get(g.userId) ?? 'unknown',
-      totalInputTokens: g._sum.inputTokens ?? 0,
-      totalOutputTokens: g._sum.outputTokens ?? 0,
-      estimatedCost: g._sum.estimatedCost ?? 0,
-      callCount: g._count._all,
-    }));
+    return grouped.map(g => {
+      const totalInputTokens = g._sum.inputTokens ?? 0;
+      const totalOutputTokens = g._sum.outputTokens ?? 0;
+      return {
+        userId: g.userId,
+        email: emailById.get(g.userId) ?? 'unknown',
+        totalInputTokens,
+        totalOutputTokens,
+        totalTokens: totalInputTokens + totalOutputTokens,
+        estimatedCost: g._sum.estimatedCost ?? 0,
+        callCount: g._count._all,
+        callsWithUnknownUsage: unknownByUser.get(g.userId) ?? 0,
+      };
+    });
   }
 
   // ── 6: token consumption by agent ───────────────────────────────────
@@ -304,6 +339,61 @@ export class AnalyticsService {
         acceptanceRate: totalDecisions > 0 ? counts.accept / totalDecisions : 0,
       };
     });
+  }
+
+  // ── 10b: original AI recommendation vs final category, per category ─
+  static async getFinalCategoryBreakdown(user: UserPayload, explicitUserId?: number): Promise<FinalCategoryBreakdown> {
+    const scope = userScope(user, explicitUserId);
+
+    // One row per decided CV, with only its latest decision: decisions are
+    // append-only, so earlier (changed) decisions are not the final one.
+    // Scoped by the CV's owner, like time saved.
+    const recommendations = await prisma.cvRecommendation.findMany({
+      where: {
+        ...(scope.userId !== undefined ? { userId: scope.userId } : {}),
+        ...notSeedRecommendation(await seedRunIds()),
+        decisions: { some: {} },
+      },
+      select: {
+        primaryCategory: true,
+        decisions: {
+          orderBy: [{ timestamp: 'desc' }, { id: 'desc' }],
+          take: 1,
+          select: { decisionType: true, finalPrimaryCategory: true },
+        },
+      },
+    });
+
+    const byCategory = new Map<string, { originalCount: number; finalCount: number }>();
+    const bucket = (category: string) => {
+      const entry = byCategory.get(category) ?? { originalCount: 0, finalCount: 0 };
+      byCategory.set(category, entry);
+      return entry;
+    };
+    let rejectedCount = 0;
+    let acceptedCount = 0;
+    let modifiedCount = 0;
+    for (const recommendation of recommendations) {
+      bucket(recommendation.primaryCategory).originalCount += 1;
+      const decisionType = recommendation.decisions[0]?.decisionType;
+      if (decisionType === 'ACCEPT') acceptedCount += 1;
+      else if (decisionType === 'MODIFY') modifiedCount += 1;
+      // A DB CHECK constraint stores finalPrimaryCategory as NULL exactly when
+      // the decision is REJECT, so a rejected CV never counts as a final category.
+      const finalCategory = recommendation.decisions[0]?.finalPrimaryCategory;
+      if (finalCategory) bucket(finalCategory).finalCount += 1;
+      else rejectedCount += 1;
+    }
+
+    return {
+      decidedCvCount: recommendations.length,
+      acceptedCount,
+      modifiedCount,
+      rejectedCount,
+      categories: [...byCategory.entries()]
+        .map(([category, counts]) => ({ category, ...counts }))
+        .sort((a, b) => a.category.localeCompare(b.category)),
+    };
   }
 
   // ── Usage completeness: how far the token/cost totals above are incomplete ─

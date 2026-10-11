@@ -20,19 +20,23 @@ These are local demo credentials created by `npm run db:seed` (see `backend/src/
   or in the `OPENAI_API_KEY` environment variable. If both are set, the
   environment variable wins. Without a working key the agents return an error
   instead of a result, but every login, isolation and admin step below still works.
-- Database up to date and seeded (run in `backend/`):
+- A seeded database with the demo accounts. **Do not re-seed `backend/data/dev.db` if it holds data you want to keep:** `db:seed` deletes every row first. Use a separate demo database instead, exactly as in [DEMO_RUNBOOK.md](DEMO_RUNBOOK.md) section 1 (PowerShell, in `backend\`):
 
-```bash
-npm run db:migrate:deploy   # apply all migrations to backend/data/dev.db
-npm run db:seed             # demo users + agents (deletes and recreates all rows)
+```powershell
+$env:DATABASE_URL = 'file:../data/demo.db'   # check it prints this before continuing
+npm run db:setup                             # migrate + seed demo.db only
 ```
 
-- Start the app (two terminals):
+  (bash: `export DATABASE_URL="file:../data/demo.db"`, then `npm run db:setup`.)
+
+- Start the app (two terminals), with the same `DATABASE_URL` set in the backend's terminal:
 
 ```bash
 cd backend  && npm run dev   # API on http://localhost:3001
 cd frontend && npm run dev   # UI on  http://localhost:5173
 ```
+
+  Sections 1 and 2 below use their own throwaway databases and need neither step.
 
 ## 1. Real OpenAI verification
 
@@ -63,9 +67,10 @@ calls in flight; it never records headers. The run:
 - **Usage logs.** Every real call is matched to its log row by OpenAI response id, comparing user, agent, model, tokens, latency, status, cost and run.
 - **Admin views.** Global, per-user and per-agent totals must equal the raw OpenAI usage.
 
-Output: `evaluation/multi-user-real-openai-report.md` (and `.json`). Last run:
-**72/72 checks PASS, 11 real OpenAI calls (all HTTP 200), peak 3 concurrent
-OpenAI calls, cost about $0.04.** It needs a valid `OPENAI_API_KEY` in
+Output: `evaluation/multi-user-real-openai-report.md` (and `.json`). Last run
+(2026-10-09): **72/72 checks PASS, 11 real OpenAI calls (all HTTP 200), peak 3
+concurrent OpenAI calls, cost about $0.04.** It covers the CV and sentiment
+agents only. It needs a valid `OPENAI_API_KEY` in
 `backend/.env.local` with no conflicting `OPENAI_API_KEY` environment variable,
 which would take precedence.
 
@@ -194,4 +199,4 @@ try { Invoke-RestMethod -Uri "$api/usage-logs/$u2Id" -Headers (Auth $t1) } catch
 | Usage logs | `GET /api/usage-logs` (own; all for admin), `GET /api/usage-logs/:userId` (self or admin, else 403) |
 | Agent runs | `GET /api/runs` (own; all for admin, optional `?userId=` for admin), `GET /api/runs/:id` (owner or admin, else 403) |
 | Dashboard analytics | `GET /api/analytics/summary`, `/by-agent`, `/runs`, `/errors`, `/latency`, `/acceptance-rate`, `/time-saved` (own; global for admin) |
-| Admin only | `GET /api/users`, `GET /api/analytics/by-user` |
+| Admin only | `GET /api/users` (and user management: `POST /api/users`, `PUT /api/users/:id/password`, `DELETE /api/users/:id`), `GET /api/analytics/by-user`, the `DELETE` routes for CV documents, sentiment results and skills-gap analyses |

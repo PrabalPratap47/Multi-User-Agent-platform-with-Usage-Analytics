@@ -1,5 +1,7 @@
 # Documentation Review and Setup Verification (Step 20)
 
+> **Historical report (2026-10-09).** The figures below are from that date: 3 migrations, 17 test files, 313 tests. The documentation was revised again on 2026-10-11 to match the current code; ARCHITECTURE.md is now the canonical architecture document rather than the original design proposal. The fresh-setup run below was not repeated after the later migrations and features.
+
 Date: 2026-10-09. Environment: Windows 10 Pro 10.0.19045, Node.js 24.21.0, npm 12.0.2, Windows PowerShell 5.1.19041, Git Bash, Google Chrome (headless, via `playwright-core`).
 
 Every result below comes from a command that was actually run. Items that were only inspected are labelled as such.

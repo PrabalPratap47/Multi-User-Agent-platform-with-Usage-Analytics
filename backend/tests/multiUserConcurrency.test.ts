@@ -20,6 +20,7 @@ import {
 } from '../src/agents/SentimentAgent.js';
 import { LLMService, type LLMProviderClient, type LLMProviderRequest, type LLMProviderResponse } from '../src/services/llmService.js';
 import { CV_CATEGORIES } from '../src/utils/validators.js';
+import { cvFeedbackFrom } from './fixtures/cvFeedback.js';
 
 /**
  * Step 16 - multi-user and concurrent agent testing.
@@ -70,7 +71,7 @@ function cvBody(cv: string) {
   const primary = /Node\.js/.test(cv) ? 'Back-End Developer' : /React/.test(cv) ? 'Front-End Developer' : 'Web Automation';
   const confidence: Record<string, number> = Object.fromEntries(CV_CATEGORIES.map(c => [c, 0.02]));
   confidence[primary] = 0.9;
-  return { primaryCategory: primary, secondaryCategories: [], confidence, rationale: [{ category: primary, evidence: cv.replace(/^MARKER-\S+ /, '') }] };
+  return { primaryCategory: primary, secondaryCategories: [], confidence, rationale: [{ category: primary, evidence: cv.replace(/^MARKER-\S+ /, '') }], feedback: cvFeedbackFrom(cv.replace(/^MARKER-\S+ /, '')) };
 }
 
 function sentimentBody(feedback: string) {

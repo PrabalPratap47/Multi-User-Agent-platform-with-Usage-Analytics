@@ -6,7 +6,7 @@ Code: `backend/src/services/cvBatchService.ts`, `backend/src/utils/validators.ts
 
 ## Why the upload is JSON, not multipart
 
-The backend has no multipart-parsing or PDF/DOCX text-extraction dependency. The browser reads each selected file as text (`File.text()`) and sends it as JSON. Only plain-text CVs are supported. A PDF or Word file renamed to `.txt` is detected as binary and rejected.
+The backend has no multipart-parsing dependency. The browser reads each selected file and sends it as JSON: a `.txt` file as its text (`File.text()`), a `.pdf` file as its bytes base64-encoded with `mimeType: "application/pdf"`. A PDF's text is extracted on the server (`backend/src/utils/pdfText.ts`, PDF.js in a worker thread) and then gets exactly the same checks and classification as a `.txt` file. Only text-based PDFs are supported: there is no OCR. Word files are not supported. A PDF or Word file renamed to `.txt` is detected as binary and rejected.
 
 ## Request
 
@@ -40,10 +40,13 @@ Each file moves to `RUNNING` when its slot starts. Before any AI call, it is rej
 
 | Check | Reason stored on the run |
 |---|---|
-| `mimeType` is not `text/plain` | `Unsupported file type "<type>" - only text/plain is supported` |
+| `mimeType` is not `text/plain` or `application/pdf` | `Unsupported file type "<type>" - only text/plain, application/pdf is supported` |
+| PDF only: empty, over 2 MB, no PDF signature, damaged, password-protected or encrypted, over 50 pages, no extractable text (scanned), or reading took over 15 s or too much memory | A specific message for each, e.g. `The PDF is password-protected. ...` or `No readable text was found in this PDF. ... text recognition (OCR) is not supported. ...` |
 | Fewer than 10 characters after trimming | `File content is too short to be a CV` |
 | More than 50,000 characters | `File content exceeds the 50000 character limit` |
 | More than 5% control characters (binary, e.g. a renamed PDF/DOCX) | `File content does not appear to be valid decoded text` |
+
+For a PDF, the character checks apply to its extracted text, and that text (never the upload) is stored as the document's content.
 
 Files that pass go to the CV Classification Agent. The agent uses the same strict schema, one repair retry, and grounding and leak checks as single-CV classification.
 
@@ -67,7 +70,7 @@ Stored error messages are capped at 300 characters and never contain raw model o
 ## In the UI (CV PROCESSING tab)
 
 - **Before upload:**
-  - Files are checked in the browser: `.txt` only; not empty; at least 10 characters of text; at most 50,000 characters; not binary.
+  - Files are checked in the browser: `.txt` or `.pdf` (both can be mixed); not empty; a `.txt` has at least 10 and at most 50,000 characters and is not binary; a `.pdf` is at most 2 MB and starts with a PDF signature; all files together are at most 9 MB (the server accepts 10 MB per request).
   - Rejected files are listed as "Will not be uploaded" with the reason and are never sent.
   - One valid file uses the single-CV endpoint; two or more use the batch endpoint.
 - **While processing:**
@@ -116,7 +119,7 @@ Every batch file is a real run, so it counts in the run counts and in the succes
 
 ## Limitations
 
-- **Plain text only.** No PDF/DOCX text extraction.
-- **In-process processing, no resumption.** If the backend stops mid-batch, the unfinished files cannot finish. They are **not resumed**: a queued file's MIME type is not stored (so its type check cannot be repeated), a running file may already have made a billed AI call, and resuming at startup would make AI calls nobody asked for. Instead, the next backend start fails them before accepting requests (see "Restart recovery" below). Failed files are never retried automatically: upload them again.
+- **Plain text and text-based PDF only.** No OCR for scanned PDFs, no DOCX. The per-batch cap of 3 files in progress also bounds PDF extraction workers per batch.
+- **In-process processing, no resumption.** If the backend stops mid-batch, the unfinished files cannot finish. They are **not resumed**: a queued file's MIME type is not stored (so its type check cannot be repeated), a running file may already have made a billed AI call, and resuming at startup would make AI calls nobody asked for. Instead, the next backend start fails them before accepting requests (see "Restart recovery" above). Failed files are never retried automatically: upload them again.
 - **Concurrency is capped per batch, not globally.** Each batch has at most 3 AI calls in flight, but several simultaneous batches add up (3 each), and single-CV and sentiment requests have no concurrency cap. Total volume per user is bounded by the per-user AI rate limit (in memory, per process). A provider rate limit can still fail a file with the provider's reason. SQLite serializes the writes (see [DATABASE.md](DATABASE.md)).
 - **Tracking is per browser tab.** Progress tracking in the UI lasts only for the browser tab that submitted the batch; results are always available afterwards from the results list.

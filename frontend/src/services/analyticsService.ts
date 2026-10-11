@@ -7,6 +7,7 @@ import {
   AgentErrorRate,
   AgentLatency,
   CategoryAcceptanceRate,
+  FinalCategoryBreakdown,
   TimeSavedEstimate,
   UsageCompleteness,
 } from '../types/index.js';
@@ -51,6 +52,12 @@ export const analyticsService = {
 
   async getAcceptanceRates(): Promise<CategoryAcceptanceRate[]> {
     const res = await apiClient.get<{ data: CategoryAcceptanceRate[] }>('/analytics/acceptance-rate');
+    return res.data.data;
+  },
+
+  /** Original AI recommendation vs final category, by each CV's latest decision. */
+  async getFinalCategories(): Promise<FinalCategoryBreakdown> {
+    const res = await apiClient.get<{ data: FinalCategoryBreakdown }>('/analytics/final-categories');
     return res.data.data;
   },
 

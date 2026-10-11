@@ -39,29 +39,11 @@ export function OverviewSection() {
               subtitle={incomplete ? 'Known costs only - incomplete, see below' : undefined}
             />
             <StatCard
-              title="Time Saved (est.)"
+              title="Estimated time saved"
               value={timeSaved.data ? `${timeSaved.data.estimatedTimeSavedHours.toFixed(2)} hrs` : '—'}
-              subtitle="Estimated, not measured - see methodology below"
             />
           </div>
           {completeness.data && <UsageCompletenessNotice data={completeness.data} />}
-          {timeSaved.data && (
-            <details className="mt-4 text-sm text-gray-600">
-              <summary className="cursor-pointer font-medium text-gray-700">
-                How is &quot;time saved&quot; calculated? (methodology: {timeSaved.data.methodology})
-              </summary>
-              <ul className="list-disc list-inside mt-2 space-y-1">
-                {timeSaved.data.assumptions.map((assumption, i) => (
-                  <li key={i}>{assumption}</li>
-                ))}
-                <li>
-                  Baseline: {timeSaved.data.baselineManualReviewMinutesPerCv} min/CV (assumed) · Measured automated
-                  latency: {timeSaved.data.measuredAverageAutomatedLatencyMs} ms · Completed CVs:{' '}
-                  {timeSaved.data.completedCvCount}
-                </li>
-              </ul>
-            </details>
-          )}
           <DataAsOf at={new Date()} />
         </>
       )}

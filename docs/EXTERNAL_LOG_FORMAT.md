@@ -27,6 +27,28 @@ Schema is `backend/src/externalLogs/externalLogRecord.schema.json`.
 A `.json` file whose top level is an object (not an array) is rejected
 with a clear, file-level error - see "Error reporting" below.
 
+## Import request
+
+The EXTERNAL LOGS tab reads the chosen file in the browser and sends it as
+JSON (`ImportLogSchema` in `backend/src/utils/validators.ts`):
+
+```
+POST /api/import/logs
+{ "sourceAgentName": "...", "fileName": "...", "format": "json" | "jsonl", "content": "<file text>", "notes": "..." }
+```
+
+| Field | Rule |
+|---|---|
+| `sourceAgentName` | Required, 1–255 characters: a label for the imported source |
+| `fileName` | Required, 1–255 characters, no control characters (stored as data only) |
+| `format` | `json` or `jsonl`: which parser to use |
+| `content` | The file's text, not empty, at most 2 MB |
+| `notes` | Optional, up to 1,000 characters |
+
+A request that breaks these rules gets 400 and nothing is stored.
+Otherwise the response (201) carries the import summary described under
+"Error reporting" below. The importer is always the authenticated caller.
+
 ## Record fields
 
 | Field | Type | Required | Notes |
@@ -148,7 +170,7 @@ Note the second record: no `userId`, `model`, `inputTokens`,
 ```json
 { "agentName": "Some Agent", "status": "ok" }
 ```
-→ rejected: `timestamp: timestamp is required`.
+→ rejected: `timestamp: Required`.
 
 ```json
 { "timestamp": "not-a-real-date", "agentName": "Some Agent" }
@@ -160,7 +182,16 @@ any other valid records in the same file are still imported.
 
 ## Sample files for demonstration
 
-`docs/samples/external-agent-logs-valid.json` and
-`docs/samples/external-agent-logs-mixed.jsonl` - the latter deliberately
-contains both valid and malformed records, to demonstrate the partial-
-import/error-reporting behavior described above.
+| File | Contents | Expected import result |
+|---|---|---|
+| `docs/samples/external-agent-logs-valid.json` | 5 valid records | 5 valid, 0 invalid |
+| `docs/samples/external-agent-logs-mixed.jsonl` | 6 lines: 3 valid records, then a missing `timestamp`, an unparseable date and a line that is not JSON | 3 valid, 3 invalid, each listed with its 0-based line index and reason |
+
+To demonstrate: log in, open **EXTERNAL LOGS**, enter a source agent name
+(for example "Legacy Screening Bot"), choose one of the files and import it.
+The statistics and the per-agent table update from the imported records
+only; the ANALYTICS tab does not change. Import the `.jsonl` file to show
+partial import and error reporting.
+
+The sample data is synthetic: it was written for demonstration and does not
+come from a real agent.

@@ -9,6 +9,11 @@ export const sentimentService = {
     return res.data.data;
   },
 
+  /** Permanently deletes one result (owner or admin, enforced server-side). */
+  async deleteResult(id: number): Promise<void> {
+    await apiClient.delete(`/sentiment/results/${id}`);
+  },
+
   /** Own results for a user, every user's results for an admin (enforced server-side). */
   async listResults(): Promise<SentimentResult[]> {
     const res = await apiClient.get<{ data: SentimentResult[] }>('/sentiment/results');

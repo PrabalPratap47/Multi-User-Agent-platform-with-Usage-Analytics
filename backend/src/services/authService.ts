@@ -96,9 +96,13 @@ export class AuthService {
   static async resolveSession(sessionId: number, tokenUserId: number): Promise<UserPayload | null> {
     const session = await prisma.refreshToken.findUnique({
       where: { id: sessionId },
-      include: { user: { select: { id: true, email: true, role: true } } },
+      include: { user: { select: { id: true, email: true, role: true, deactivatedAt: true } } },
     });
     if (!session || session.revokedAt || session.expiresAt < new Date() || session.userId !== tokenUserId) {
+      return null;
+    }
+    // A deleted (deactivated) account loses every session at once, even unrevoked ones.
+    if (session.user.deactivatedAt) {
       return null;
     }
     return toPayload(session.user);
@@ -118,7 +122,10 @@ export class AuthService {
       throw Errors.tooManyRequests('Too many failed login attempts. Try again in 15 minutes.');
     }
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    // Accounts created by an admin are stored with a lowercased email.
+    const user =
+      (await prisma.user.findUnique({ where: { email } })) ??
+      (await prisma.user.findUnique({ where: { email: email.trim().toLowerCase() } }));
 
     if (!user) {
       recordLoginFailure(throttleKey, now);
@@ -130,6 +137,13 @@ export class AuthService {
     if (!passwordMatch) {
       recordLoginFailure(throttleKey, now);
       logger.warn('Failed login attempt - wrong password', { userId: user.id, ip: clientIp });
+      throw Errors.badRequest('Invalid email or password');
+    }
+
+    // A deleted (deactivated) account cannot log in; same message as a wrong password.
+    if (user.deactivatedAt) {
+      recordLoginFailure(throttleKey, now);
+      logger.warn('Login refused - account deactivated', { userId: user.id, ip: clientIp });
       throw Errors.badRequest('Invalid email or password');
     }
 
@@ -164,6 +178,10 @@ export class AuthService {
     });
 
     if (!stored || stored.revokedAt || stored.expiresAt < new Date()) {
+      throw Errors.unauthorized();
+    }
+    if (stored.user.deactivatedAt) {
+      await prisma.refreshToken.update({ where: { id: stored.id }, data: { revokedAt: new Date() } });
       throw Errors.unauthorized();
     }
 
@@ -236,8 +254,8 @@ export class AuthService {
       where: { id: authenticatedUserId },
     });
 
-    if (!user) {
-      // Token was valid but the user no longer exists (e.g. deleted).
+    if (!user || user.deactivatedAt) {
+      // Token was valid but the user no longer exists or was deleted (deactivated).
       throw Errors.unauthorized();
     }
 

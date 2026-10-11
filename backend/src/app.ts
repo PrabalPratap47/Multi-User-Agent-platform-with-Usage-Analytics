@@ -11,6 +11,7 @@ import usersRoutes from './routes/users.js';
 import usageLogsRoutes from './routes/usageLogs.js';
 import sentimentRoutes from './routes/sentiment.js';
 import runsRoutes from './routes/runs.js';
+import skillsGapRoutes from './routes/skillsGap.js';
 
 
 
@@ -36,11 +37,6 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 // Logging
 app.use(requestLogger);
 
-// Health check
-app.get('/health', (_req, res) => {
-  res.json({ status: 'ok' });
-});
-
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/cv', cvRoutes);
@@ -50,6 +46,7 @@ app.use('/api/users', usersRoutes);
 app.use('/api/usage-logs', usageLogsRoutes);
 app.use('/api/sentiment', sentimentRoutes);
 app.use('/api/runs', runsRoutes);
+app.use('/api/skills-gap', skillsGapRoutes);
 
 // 404 handler
 app.use((_req, res) => {

@@ -1,6 +1,6 @@
 # Testing
 
-**Runner**: [Vitest](https://vitest.dev/) + [Supertest](https://github.com/ladjs/supertest), 17 test files in `tests/` (313 tests passing on 2026-10-09).
+**Runner**: [Vitest](https://vitest.dev/) + [Supertest](https://github.com/ladjs/supertest), 35 test files in `tests/` (plus `setup.ts`, `helpers.ts` and `fixtures/`). The last full-suite result recorded in the documentation is 415/415 (25 files) on 2026-10-10; the 10 files added since were run individually. Run `npm test` for a current total.
 **What the tests run against**: the real Express `app` (imported directly, never bound to a port) talking to a real SQLite database file (`backend/data/test.db`) through the real Prisma Client — no mocking of Prisma, JWT, or bcrypt. This is deliberate: authorization bugs are exactly the kind of thing that mocks paper over. The LLM provider is the only thing replaced (an injected stub client), so **no test calls OpenAI**.
 
 The table of every verification command (what each proves, what it does not, and what it needs) is in the main [README](../README.md#tests-and-verification). This file covers the test suite, its database and the auth/RBAC proofs in detail.
@@ -26,6 +26,13 @@ The table of every verification command (what each proves, what it does not, and
 | `usageCompleteness.test.ts` | Missing/incomplete usage made visible. Each case comes from the real path: provider without usage, unpriced model, usage-log insert blocked by a test-only trigger, startup-recovered interrupted run, plus a provider failure as a known zero. Covers exact counts per user, admin aggregate and `byUser`, `?userId=` scoping, `GET /api/runs?usage=incomplete` and `usageIssues`, recorded totals unchanged, and no row ever fabricated for a missing call |
 | `analyticsService.test.ts` | Every metric against hand-computed fixtures, including seed-data exclusion and successful/failed runs |
 | `externalAgentLogs.test.ts`, `evaluationMetrics.test.ts` | External log import; precision/recall/F1 math |
+| `adminUsers.test.ts` | Admin user management: create (validation, case-insensitive duplicates, roles), soft delete (sessions revoked, login refused, data kept, no self-delete, last active admin protected under concurrency), change password (old one refused, sessions signed out, own session kept), 401/403/404 cases |
+| `adminTokenUsage.test.ts` | Per-user token totals behind the Admin → Users chart |
+| `cvPdfUpload.test.ts` | PDF text extraction limits and failures; single PDF and mixed PDF/TXT batches |
+| `cvFeedback.test.ts` | CV feedback: 2-4 sentence schema rule, grounding in the CV (generic or injected feedback rejected), stored and returned for single and batch processing, JSON Schema sync |
+| `cvDelete.test.ts`, `sentimentDelete.test.ts` | Admin-only deletion of CV documents and sentiment results; runs and usage logs kept; 403 for every regular user |
+| `finalCategoryAnalytics.test.ts` | Original vs final category analytics (`/api/analytics/final-categories`) |
+| `skillsGapAgent.test.ts`, `skillsGapSchema.test.ts`, `skillsGap.integration.test.ts` | Skills-gap agent: extraction against the selected role, role rules and non-fabrication (safe error after one repair), prompt injection, schema and JSON Schema sync, API isolation, admin-only delete, PSS/DCS roles |
 
 Run one file or a group by name: `npm test -- security`, `npm test -- multiUserConcurrency`.
 
@@ -43,7 +50,7 @@ Paths in SQLite `file:` URLs are relative to `backend/prisma/`. Both `.db` files
 
 ## Safety guard
 
-The test files delete and recreate their own rows (fixtures). `src/db/testDatabaseGuard.ts` runs before every test file (from `tests/setup.ts`) and before `db:reset:test` deletes anything. It refuses unless all of these hold:
+The test files delete and recreate their own rows (fixtures); `multiUserConcurrency.test.ts` and `security.test.ts` also run the real seed script against `test.db`. `src/db/testDatabaseGuard.ts` runs before every test file (from `tests/setup.ts`) and before `db:reset:test` deletes anything. It refuses unless all of these hold:
 
 1. `NODE_ENV` is `test` (Vitest sets this), so `src/config/env.ts` loaded `backend/.env.test`, not `.env.local`.
 2. `DATABASE_URL` is a valid SQLite `file:` URL.

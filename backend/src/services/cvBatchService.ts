@@ -9,6 +9,7 @@ import {
 } from '../agents/CVClassificationAgent.js';
 import { LLMServiceError, providerFailureMessage } from './llmService.js';
 import { looksLikeBinaryText } from '../utils/validators.js';
+import { extractPdfText, PdfExtractionError, PDF_MIME_TYPE } from '../utils/pdfText.js';
 import logger from '../config/logging.js';
 import type { Prisma } from '@prisma/client';
 
@@ -42,10 +43,10 @@ import type { Prisma } from '@prisma/client';
  */
 export const MAX_CONCURRENT_BATCH_FILES = 3;
 
-// Only plain text is supported - see the note on BatchCvFileSchema in
-// validators.ts for why (no multipart/binary-parsing dependency is
-// installed or verifiable in this environment).
-export const ALLOWED_CV_FILE_MIME_TYPES = ['text/plain'];
+// Plain text, or a text-based PDF sent base64-encoded (see the note on
+// BatchCvFileSchema in validators.ts). A PDF's extracted text then gets the
+// same checks and classification as a .txt file.
+export const ALLOWED_CV_FILE_MIME_TYPES = ['text/plain', PDF_MIME_TYPE];
 export const MIN_FILE_CONTENT_LENGTH = 10;
 export const MAX_FILE_CONTENT_LENGTH = 50000;
 
@@ -102,7 +103,7 @@ const MAX_STORED_ERROR_LENGTH = 300;
  */
 export function toSafeRunErrorMessage(error: unknown): string {
   let message: string;
-  if (error instanceof BatchFileRejectedError) {
+  if (error instanceof BatchFileRejectedError || error instanceof PdfExtractionError) {
     message = error.message;
   } else if (error instanceof CvClassificationValidationError) {
     message = 'The AI response did not pass validation, even after one automatic retry.';
@@ -158,8 +159,9 @@ export class CvBatchService {
 
     const entries = [];
     for (const file of files) {
+      // A PDF's document holds its extracted text (set during processing), never the raw upload.
       const document = await prisma.cvDocument.create({
-        data: { userId: user.id, batchId, fileName: file.fileName, content: file.content },
+        data: { userId: user.id, batchId, fileName: file.fileName, content: file.mimeType === PDF_MIME_TYPE ? '' : file.content },
       });
       const run = await prisma.agentRun.create({
         data: {
@@ -202,18 +204,27 @@ export class CvBatchService {
           `Unsupported file type "${file.mimeType}" - only ${ALLOWED_CV_FILE_MIME_TYPES.join(', ')} is supported`
         );
       }
-      if (file.content.trim().length < MIN_FILE_CONTENT_LENGTH) {
+      const isPdf = file.mimeType === PDF_MIME_TYPE;
+      const cvText = isPdf
+        ? await extractPdfText(file.content, { minChars: MIN_FILE_CONTENT_LENGTH, maxChars: MAX_FILE_CONTENT_LENGTH })
+        : file.content;
+
+      if (cvText.trim().length < MIN_FILE_CONTENT_LENGTH) {
         throw new BatchFileRejectedError('File content is too short to be a CV');
       }
-      if (file.content.length > MAX_FILE_CONTENT_LENGTH) {
+      if (cvText.length > MAX_FILE_CONTENT_LENGTH) {
         throw new BatchFileRejectedError(`File content exceeds the ${MAX_FILE_CONTENT_LENGTH} character limit`);
       }
       // A renamed .pdf/.docx sent as "text/plain" is still binary.
-      if (looksLikeBinaryText(file.content)) {
+      if (looksLikeBinaryText(cvText)) {
         throw new BatchFileRejectedError('File content does not appear to be valid decoded text');
       }
+      if (isPdf) {
+        await prisma.cvDocument.update({ where: { id: document.id }, data: { content: cvText } });
+      }
 
-      const result = await cvClassificationAgent.execute(document.content, context, runId);
+      // The same workflow for both formats: for a .txt file cvText is its stored content.
+      const result = await cvClassificationAgent.execute(cvText, context, runId);
 
       await prisma.cvRecommendation.create({
         data: {
@@ -226,6 +237,7 @@ export class CvBatchService {
           confidenceScore: result.confidence[result.primaryCategory],
           confidenceScores: result.confidence as unknown as Prisma.InputJsonValue,
           rationale: result.rationale as unknown as Prisma.InputJsonValue,
+          feedback: result.feedback,
           rawResponse: result.rawResponse as Prisma.InputJsonValue,
         },
       });

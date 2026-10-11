@@ -14,6 +14,7 @@ import { CvClassificationSection } from './analytics/CvClassificationSection.js'
 import { ExternalAgentLogsTab } from './analytics/ExternalAgentLogsTab.js';
 import { CvProcessingTab } from './cv/CvProcessingTab.js';
 import { SentimentTab } from './sentiment/SentimentTab.js';
+import { SkillsGapTab } from './skillsGap/SkillsGapTab.js';
 
 export function Dashboard() {
   const { user } = useAuthStore();
@@ -22,8 +23,8 @@ export function Dashboard() {
 
   const isAdmin = user?.role === 'admin';
   const tabs = isAdmin
-    ? ['analytics', 'my-records', 'agent-runs', 'cv-processing', 'sentiment', 'external-logs', 'admin-users']
-    : ['analytics', 'my-records', 'agent-runs', 'cv-processing', 'sentiment', 'external-logs'];
+    ? ['analytics', 'my-records', 'agent-runs', 'cv-processing', 'sentiment', 'skills-gap-analysis', 'external-logs', 'admin-users']
+    : ['analytics', 'my-records', 'agent-runs', 'cv-processing', 'sentiment', 'skills-gap-analysis', 'external-logs'];
 
   const handleLogout = async () => {
     await logout();
@@ -43,8 +44,11 @@ export function Dashboard() {
           </p>
         </div>
 
-        {/* Tabs */}
-        <nav aria-label="Dashboard sections" className="flex flex-wrap gap-x-1 sm:gap-x-4 gap-y-1 mb-6 border-b border-gray-300">
+        {/* Tabs: sticky, so they stay reachable while scrolling (opaque, above page content; dialogs open in the top layer) */}
+        <nav
+          aria-label="Dashboard sections"
+          className="sticky top-0 z-20 -mx-4 px-4 bg-gray-100 flex flex-wrap gap-x-1 sm:gap-x-4 gap-y-1 mb-6 border-b border-gray-300"
+        >
           {tabs.map(tab => (
             <button
               key={tab}
@@ -57,7 +61,7 @@ export function Dashboard() {
                   : 'border-transparent text-gray-600 hover:text-gray-800'
               }`}
             >
-              {tab.replace('-', ' ').toUpperCase()}
+              {tab.replace(/-/g, ' ').toUpperCase()}
             </button>
           ))}
         </nav>
@@ -75,6 +79,7 @@ export function Dashboard() {
         {activeTab === 'my-records' && <MyUsageLogs isAdmin={isAdmin} />}
         {activeTab === 'agent-runs' && <AgentRunsPanel isAdmin={isAdmin} />}
         {activeTab === 'cv-processing' && <CvProcessingTab />}
+        {activeTab === 'skills-gap-analysis' && <SkillsGapTab />}
         {activeTab === 'sentiment' && <SentimentTab />}
         {activeTab === 'external-logs' && <ExternalAgentLogsTab />}
         {activeTab === 'admin-users' && (

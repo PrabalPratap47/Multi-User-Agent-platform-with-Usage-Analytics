@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { CVController } from '../controllers/cvController.js';
-import { authenticateToken, requireUser } from '../middleware/authMiddleware.js';
+import { authenticateToken, requireAdmin, requireUser } from '../middleware/authMiddleware.js';
 import { aiRateLimit, runsPerBatchFile } from '../middleware/aiRateLimit.js';
 
 const router = Router();
@@ -9,6 +9,8 @@ router.use(authenticateToken, requireUser);
 
 // Uploading/submitting a CV
 router.post('/documents', CVController.uploadDocument);
+// Permanently deleting one CV (admin only; runs and usage logs are kept)
+router.delete('/documents/:documentId', requireAdmin, CVController.deleteDocument);
 
 // Running classification (starts AI work: per-user rate limit)
 router.post('/documents/:documentId/classify', aiRateLimit(), CVController.classifyDocument);

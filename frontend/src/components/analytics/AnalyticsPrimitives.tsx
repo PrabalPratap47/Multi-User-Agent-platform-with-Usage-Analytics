@@ -87,13 +87,9 @@ export function EmptyState({ message }: { message: string }) {
   return <p className="text-gray-500 italic py-6 text-center">{message}</p>;
 }
 
-/** Honest freshness label - this is the moment the BROWSER fetched the data, not a server-generated timestamp. */
+/** Freshness label: the moment the BROWSER fetched the data (local time), not a server-generated timestamp. */
 export function DataAsOf({ at }: { at: Date }) {
-  return (
-    <p className="text-xs text-gray-500 mt-2">
-      Data as of {at.toLocaleString()} (your local time, refreshed on page load)
-    </p>
-  );
+  return <p className="text-xs text-gray-500 mt-2">Data as of {at.toLocaleString()}</p>;
 }
 
 export function SectionCard({

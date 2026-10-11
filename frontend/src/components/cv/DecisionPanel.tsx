@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { cvService } from '../../services/cvService.js';
 import { apiErrorMessage } from '../../utils/apiError.js';
+import { categoryLabel } from '../../utils/categoryLabels.js';
 import { CV_CATEGORIES, type CvDecisionRecord, type CvDecisionRequest, type CvRecommendation, type DecisionType } from '../../types/index.js';
 
 const OPTIONS: Array<{ type: DecisionType; label: string; hint: string; active: string }> = [
@@ -146,7 +147,7 @@ export function DecisionPanel({
             >
               {CV_CATEGORIES.map(c => (
                 <option key={c} value={c}>
-                  {c}
+                  {categoryLabel(c)}
                   {c === recommendation.primaryCategory ? ' (AI recommendation)' : ''}
                 </option>
               ))}
@@ -164,7 +165,7 @@ export function DecisionPanel({
               {CV_CATEGORIES.filter(c => c !== primary).map(c => (
                 <label key={c} className="flex items-center gap-2 text-sm text-gray-700">
                   <input type="checkbox" checked={secondary.includes(c)} onChange={() => toggleSecondary(c)} className="h-4 w-4" />
-                  {c}
+                  {categoryLabel(c)}
                 </label>
               ))}
             </div>

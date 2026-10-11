@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { CV_CATEGORIES } from '../../utils/validators.js';
+import { hasValidSentenceCount, MAX_FEEDBACK_LENGTH, MAX_FEEDBACK_SENTENCES, MIN_FEEDBACK_SENTENCES } from './feedback.js';
 
 /**
  * Runtime validator for the CV Classification Agent's required output
@@ -40,6 +41,13 @@ export const CVClassificationResponseSchema = z
     secondaryCategories: z.array(z.enum(CV_CATEGORIES)).max(CV_CATEGORIES.length),
     confidence: ConfidenceMapSchema,
     rationale: z.array(RationaleEntrySchema).min(1, 'rationale must include at least one entry'),
+    // 2-4 complete sentences of constructive feedback about the CV (see feedback.ts).
+    feedback: z
+      .string()
+      .trim()
+      .min(1, 'feedback must not be empty')
+      .max(MAX_FEEDBACK_LENGTH)
+      .refine(hasValidSentenceCount, `feedback must be ${MIN_FEEDBACK_SENTENCES} to ${MAX_FEEDBACK_SENTENCES} complete sentences`),
   })
   .strict()
   .refine(data => !data.secondaryCategories.includes(data.primaryCategory), {

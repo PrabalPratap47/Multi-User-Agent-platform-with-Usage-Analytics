@@ -180,8 +180,8 @@ describe('checkMigrations', () => {
 
   it('wired to the real repository: the checked-in migrations, and test.db is current', async () => {
     const local = listLocalMigrations(MIGRATIONS_DIR);
-    expect(local).toEqual(['20261007000000_init_sqlite', '20261008000000_agent_run_cv_document_link', '20261008120000_usage_log_provider_response_id']);
-    expect(await checkMigrations({ query: sql => prisma.$queryRawUnsafe(sql), databasePath: DATABASE_FILE_PATH, nodeEnv: 'test' })).toEqual({ ok: true, applied: 3 });
+    expect(local).toEqual(['20261007000000_init_sqlite', '20261008000000_agent_run_cv_document_link', '20261008120000_usage_log_provider_response_id', '20261011000000_skills_gap_analysis', '20261011120000_cv_recommendation_feedback', '20261011180000_user_name_and_deactivation']);
+    expect(await checkMigrations({ query: sql => prisma.$queryRawUnsafe(sql), databasePath: DATABASE_FILE_PATH, nodeEnv: 'test' })).toEqual({ ok: true, applied: 6 });
   });
 });
 
@@ -238,7 +238,7 @@ describe('backend startup', () => {
   it('a current schema starts: schema check, then run recovery, then listening', async () => {
     const { output, listened } = await startServer(await migratedCopy());
     expect(listened, output).toBe(true);
-    const checked = output.indexOf('Database schema is up to date (3 migrations applied)');
+    const checked = output.indexOf('Database schema is up to date (6 migrations applied)');
     const recovered = output.search(/No agent runs were left unfinished|INTERRUPTED_RUNS_RECOVERED/);
     const listening = output.indexOf('Server running on');
     expect(checked).toBeGreaterThanOrEqual(0);

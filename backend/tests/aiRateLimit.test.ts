@@ -35,6 +35,7 @@ import {
 } from '../src/agents/SentimentAgent.js';
 import { LLMService, type LLMProviderRequest, type LLMProviderResponse } from '../src/services/llmService.js';
 import { CV_CATEGORIES } from '../src/utils/validators.js';
+import { cvFeedbackFrom } from './fixtures/cvFeedback.js';
 
 const WINDOW_MS = 60_000;
 
@@ -142,7 +143,7 @@ function stubProvider() {
           const feedback = content.split('\n')[1] ?? '';
           return { content: [{ type: 'text', text: JSON.stringify({ sentiment: 'positive', confidence: 0.9, rationale: `Mentions: ${feedback.slice(0, 40)}` }) }], model: 'gpt-4o', usage };
         }
-        const text = JSON.stringify({ primaryCategory: 'Back-End Developer', secondaryCategories: [], confidence, rationale: [{ category: 'Back-End Developer', evidence: EVIDENCE }] });
+        const text = JSON.stringify({ primaryCategory: 'Back-End Developer', secondaryCategories: [], confidence, rationale: [{ category: 'Back-End Developer', evidence: EVIDENCE }], feedback: cvFeedbackFrom(EVIDENCE) });
         return { content: [{ type: 'text', text }], model: 'gpt-4o', usage };
       },
     },

@@ -19,7 +19,10 @@ import { chromium, type Browser, type Page } from 'playwright-core';
  *   - all visible text meets WCAG AA contrast (4.5:1, 3:1 for large text).
  * Plus: a failed login shows the server's message in an alert; login,
  * role-specific tabs and logout; visible keyboard focus; a single CV
- * classified through the UI and decided (REJECT needs a reason); a batch
+ * classified through the UI and decided (REJECT needs a reason), collapsed and
+ * expanded, then deleted by an admin through its confirmation dialog (a
+ * regular user has no Delete action, on CVs or sentiment); sticky dashboard
+ * tabs while scrolling; a batch
  * with one failing file reports the failure; a sentiment result matches the API.
  *
  * Run with: `npm run verify:ui` from backend/ (needs Google Chrome).
@@ -75,6 +78,7 @@ const controlledFetch: typeof fetch = async (_input, init) => {
       secondaryCategories: [],
       confidence: { PSS: 0.05, DCS: 0.05, 'Front-End Developer': 0.05, 'Back-End Developer': 0.9, 'Web Automation': 0.05, 'Mobile Automation': 0.05, 'AI Engineer': 0.05, 'Chatbot Application Tester': 0.05, Other: 0.05 },
       rationale: [{ category: 'Back-End Developer', evidence: 'building REST APIs in Go and PostgreSQL' }],
+      feedback: 'The CV describes building REST APIs in Go and PostgreSQL for five years. It could be improved by adding measurable outcomes for that work.',
     })
   );
 };
@@ -254,8 +258,10 @@ async function main() {
           await p.getByRole('navigation', { name: 'Dashboard sections' }).getByRole('button', { name: tab, exact: true }).click();
           await settle(p);
           if (tab === 'CV PROCESSING' && who === 'user1') {
-            // Open the full decision form (select, checkboxes, reason) on the pending result.
-            await p.getByRole('radio', { name: 'MODIFY' }).first().click();
+            // Expand the pending result (records start collapsed) and open its full decision form (select, checkboxes, reason).
+            const pending = p.getByRole('article').filter({ hasText: 'Awaiting review' }).first();
+            await pending.getByRole('button', { expanded: false }).first().click();
+            await pending.getByRole('radio', { name: 'MODIFY' }).click();
           }
           const current = await p.locator('[aria-current="page"]').allInnerTexts();
           const a = (await p.evaluate(AUDIT)) as { overflowPx: number; offenders: string[]; unnamed: string[]; lowContrast: string[]; lowContrastCount: number };
@@ -338,6 +344,35 @@ async function main() {
     const saved = results.find(r => r.cvDocument?.fileName === 'ui-single.txt')?.decisions[0];
     check('CV', 'the REJECT decision with its reason is stored (API)', saved?.decisionType === 'REJECT' && saved.reason === 'Not a fit for the current openings.');
 
+    const recordToggle = card.getByRole('button', { name: 'ui-single.txt', exact: true });
+    const recordDetails = card.locator('section[aria-label="Original AI recommendation"]');
+    const openAfterUpload = (await recordToggle.getAttribute('aria-expanded')) === 'true' && (await recordDetails.isVisible());
+    await recordToggle.click();
+    const collapsedText = await card.innerText();
+    const collapsedOk = (await recordToggle.getAttribute('aria-expanded')) === 'false' && !(await recordDetails.isVisible()) && collapsedText.includes('AI recommendation: Back-End Developer · Final: none (rejected)');
+    await recordToggle.click();
+    check('CV', 'a CV record opens after upload, collapses to its summary line and expands again', openAfterUpload && collapsedOk && (await recordDetails.isVisible()), collapsedText.split('\n').slice(0, 4).join(' / '));
+
+    await page.evaluate('window.scrollTo(0, document.body.scrollHeight)');
+    const scrolledBy = Number(await page.evaluate('window.scrollY'));
+    const tabsTop = (await page.getByRole('navigation', { name: 'Dashboard sections' }).boundingBox())?.y ?? -1;
+    check('Layout', 'the dashboard tabs stay at the top of the screen while scrolling', scrolledBy > 0 && Math.abs(tabsTop) < 1, `scrolled ${scrolledBy}px, tabs at y=${tabsTop}`);
+    await page.evaluate('window.scrollTo(0, 0)');
+
+    // Deleting is admin only: the regular user gets no Delete action; an admin deletes through the dialog.
+    check('CV', 'a regular user sees no Delete action on CV records', (await page.getByRole('button', { name: /^Delete / }).count()) === 0);
+    const adminCtx = await browser.newContext({ viewport: VIEWPORTS.desktop, locale: 'en-US' });
+    const adminPage = await adminCtx.newPage();
+    await login(adminPage, USERS.admin);
+    await adminPage.getByRole('button', { name: 'CV PROCESSING', exact: true }).click();
+    const adminCard = adminPage.getByRole('article').filter({ hasText: 'ui-single.txt' });
+    await adminCard.getByRole('button', { name: 'Delete ui-single.txt' }).click();
+    await adminPage.getByRole('dialog', { name: 'Delete this CV permanently?' }).getByRole('button', { name: 'Delete permanently' }).click();
+    await adminCard.waitFor({ state: 'detached', timeout: 10_000 });
+    await adminCtx.close();
+    const afterDelete = (await api('GET', '/cv/results', token.user1)).data as Array<{ cvDocument?: { fileName?: string } }>;
+    check('CV', "an admin deletes a user's CV through the confirmation dialog; it disappears from the list and the API", !afterDelete.some(r => r.cvDocument?.fileName === 'ui-single.txt'));
+
     await page.setInputFiles('#cv-files', [
       { name: 'ui-batch-ok.txt', mimeType: 'text/plain', buffer: Buffer.from(`UI batch ok. ${CV_TEXT}`) },
       { name: 'ui-batch-fails.txt', mimeType: 'text/plain', buffer: Buffer.from(`${FAIL} UI batch failing file. ${CV_TEXT}`) },
@@ -356,6 +391,8 @@ async function main() {
     const latestText = await latest.innerText();
     const sentiments = (await api('GET', '/sentiment/results', token.user1)).data as Array<{ id: number; sentiment: string; confidence: number }>;
     check('Sentiment', 'the sentiment result shown matches the stored result (API)', latestText.includes('Positive') && latestText.includes(`Result #${sentiments[0].id}`) && latestText.includes('90% (0.90)'));
+    await page.getByRole('heading', { name: 'Your sentiment results' }).waitFor();
+    check('Sentiment', 'a regular user sees no Delete action on sentiment results', (await page.getByRole('button', { name: /^Delete / }).count()) === 0);
 
     await page.getByRole('button', { name: 'Logout' }).click();
     await page.locator('#email').waitFor({ timeout: 10_000 });

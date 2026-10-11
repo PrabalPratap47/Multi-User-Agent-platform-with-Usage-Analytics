@@ -3,6 +3,22 @@
 **Date:** 2026-10-08 · **Scope:** backend API, authentication, authorization, agents, uploads, logging, secrets, CORS, database, errors, frontend bundle.
 **Dependency vulnerabilities** (`npm audit`) are covered separately in [DEPENDENCY_AUDIT.md](DEPENDENCY_AUDIT.md).
 
+> **Scope note (added 2026-10-11).** This audit describes the code and test results as of 2026-10-08; it was not repeated. Added later and **not covered by the results below**:
+>
+> - the per-user AI rate limit, the agent-run listing, and the startup schema and secret checks;
+> - PDF upload and CV feedback;
+> - the Skills Gap agent;
+> - admin user management (create, change password, soft delete);
+> - admin-only deletion of CV documents, sentiment results and skills-gap analyses.
+>
+> Each has its own tests (see [backend/TESTING.md](../backend/TESTING.md)). `security.test.ts` now expects 403 when a regular user calls the admin-only sentiment `DELETE` route; the CV-document and skills-gap `DELETE` routes are covered by `cvDelete.test.ts` and `skillsGap.integration.test.ts`.
+>
+> Two statements below are no longer literally true:
+> - Rows 3.1–3.4 and 9.3 say no PUT/PATCH/DELETE routes exist. Admin-only `DELETE` routes and `PUT /api/users/:id/password` now exist; regular users are refused with 403.
+> - Row 13.1 says there is no raw SQL. `services/usersService.ts` now uses two parameterised tagged-template queries (case-insensitive email check, atomic deactivation), and the startup check reads Prisma's migration history with fixed SQL. No query is built from strings.
+>
+> Current overview: [ARCHITECTURE.md §H](../ARCHITECTURE.md#h-security-and-known-limitations).
+
 ## How this was tested
 
 | Kind | What it means | Where |

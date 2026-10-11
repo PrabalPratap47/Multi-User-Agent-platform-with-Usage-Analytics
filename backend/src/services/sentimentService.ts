@@ -105,6 +105,26 @@ export class SentimentService {
     return result;
   }
 
+  /**
+   * Permanently deletes one result (its feedback text, label and rationale).
+   * Admin only (the route also requires an admin); regular users cannot
+   * delete anything, not even their own results. Its agent run and usage
+   * logs are kept, so token, cost and run history stay exact.
+   */
+  static async deleteResult(user: UserPayload, id: number) {
+    if (user.role !== 'admin') {
+      throw Errors.forbidden('Only an admin can delete sentiment results');
+    }
+    const result = await prisma.sentimentResult.findUnique({ where: { id }, select: { id: true, userId: true } });
+    if (!result) {
+      throw Errors.notFound('Sentiment result');
+    }
+    await prisma.sentimentResult.delete({ where: { id } });
+    // Ids only - never the feedback text.
+    logger.info('Sentiment result permanently deleted', { resultId: id, deletedBy: user.id, ownerId: result.userId });
+    return { id };
+  }
+
   /** Listing results - own for a regular user, all for an admin. */
   static async listResults(user: UserPayload) {
     const where = user.role === 'admin' ? {} : { userId: user.id };

@@ -87,6 +87,7 @@ const controlledFetch: typeof fetch = async (_input, init) => {
       secondaryCategories: [],
       confidence: { PSS: 0.05, DCS: 0.05, 'Front-End Developer': 0.05, 'Back-End Developer': 0.9, 'Web Automation': 0.05, 'Mobile Automation': 0.05, 'AI Engineer': 0.05, 'Chatbot Application Tester': 0.05, Other: 0.05 },
       rationale: [{ category: 'Back-End Developer', evidence: 'building REST APIs in Go and PostgreSQL' }],
+      feedback: 'The CV describes building REST APIs in Go and PostgreSQL for five years. It could be improved by adding measurable outcomes for that work.',
     })
   );
 };

@@ -1,0 +1,137 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SkillsGapResponse",
+  "description": "Required response shape for the CV Skills Extraction & Gap Analysis Agent. Every model response is validated against this schema (via the equivalent Zod schema in schema.ts) and the role rules in outputGuard.ts before it is stored or returned. Every skill configured for targetRole (roles.ts) appears exactly once across demonstratedSkills, partiallyDemonstratedSkills and potentialGaps; a gap's priority equals the skill's configured importance.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "targetRole",
+    "overallSummary",
+    "demonstratedSkills",
+    "partiallyDemonstratedSkills",
+    "potentialGaps",
+    "learningRoadmap",
+    "estimatedPreparationTime",
+    "limitations"
+  ],
+  "properties": {
+    "targetRole": {
+      "type": "string",
+      "enum": [
+        "Front-End Developer",
+        "Back-End Developer",
+        "Web Automation Engineer",
+        "Mobile Automation Engineer",
+        "AI Engineer",
+        "Chatbot Application Tester",
+        "PSS",
+        "DCS"
+      ]
+    },
+    "overallSummary": { "type": "string", "minLength": 1, "maxLength": 1500 },
+    "demonstratedSkills": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["skill", "status", "evidence"],
+        "properties": {
+          "skill": { "type": "string", "minLength": 1, "maxLength": 120 },
+          "status": { "const": "demonstrated" },
+          "evidence": { "type": "string", "minLength": 1, "maxLength": 500, "description": "A short excerpt from the CV that shows the skill." }
+        }
+      }
+    },
+    "partiallyDemonstratedSkills": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["skill", "status", "evidence", "missingEvidence"],
+        "properties": {
+          "skill": { "type": "string", "minLength": 1, "maxLength": 120 },
+          "status": { "const": "partially_demonstrated" },
+          "evidence": { "type": "string", "minLength": 1, "maxLength": 500 },
+          "missingEvidence": { "type": "string", "minLength": 1, "maxLength": 500, "description": "What practical application the CV does not show." }
+        }
+      }
+    },
+    "potentialGaps": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "skill",
+          "status",
+          "priority",
+          "whyItMatters",
+          "whatToUnderstand",
+          "topics",
+          "practicalExercise",
+          "miniProject",
+          "completionCriterion",
+          "estimatedLearningTime"
+        ],
+        "properties": {
+          "skill": { "type": "string", "minLength": 1, "maxLength": 120 },
+          "status": { "const": "not_demonstrated", "description": "Not demonstrated in the submitted CV - not proof the candidate lacks the skill." },
+          "priority": { "type": "string", "enum": ["High", "Medium", "Low"] },
+          "whyItMatters": { "type": "string", "minLength": 1, "maxLength": 600 },
+          "whatToUnderstand": { "type": "string", "minLength": 1, "maxLength": 600 },
+          "topics": { "type": "array", "minItems": 1, "maxItems": 8, "items": { "type": "string", "minLength": 1, "maxLength": 120 } },
+          "practicalExercise": { "type": "string", "minLength": 1, "maxLength": 600 },
+          "miniProject": { "type": ["string", "null"], "minLength": 1, "maxLength": 600 },
+          "completionCriterion": { "type": "string", "minLength": 1, "maxLength": 400 },
+          "estimatedLearningTime": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["minHours", "maxHours", "isApproximate"],
+            "description": "Approximate estimate only; minHours <= maxHours.",
+            "properties": {
+              "minHours": { "type": "integer", "minimum": 1, "maximum": 400 },
+              "maxHours": { "type": "integer", "minimum": 1, "maximum": 400 },
+              "isApproximate": { "const": true }
+            }
+          }
+        }
+      }
+    },
+    "learningRoadmap": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 6,
+      "description": "Stages numbered 1, 2, 3, ... in order.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["stage", "title", "objective", "topics", "practicalTask", "completionCriteria"],
+        "properties": {
+          "stage": { "type": "integer", "minimum": 1, "maximum": 6 },
+          "title": { "type": "string", "minLength": 1, "maxLength": 80 },
+          "objective": { "type": "string", "minLength": 1, "maxLength": 400 },
+          "topics": { "type": "array", "minItems": 1, "maxItems": 10, "items": { "type": "string", "minLength": 1, "maxLength": 120 } },
+          "practicalTask": { "type": "string", "minLength": 1, "maxLength": 600 },
+          "completionCriteria": { "type": "string", "minLength": 1, "maxLength": 400 }
+        }
+      }
+    },
+    "estimatedPreparationTime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["minWeeks", "maxWeeks", "hoursPerWeekAssumed", "isApproximate", "note"],
+      "description": "Approximate estimate only; minWeeks <= maxWeeks.",
+      "properties": {
+        "minWeeks": { "type": "number", "minimum": 0, "maximum": 104 },
+        "maxWeeks": { "type": "number", "minimum": 0, "maximum": 104 },
+        "hoursPerWeekAssumed": { "type": "integer", "minimum": 1, "maximum": 80 },
+        "isApproximate": { "const": true },
+        "note": { "type": "string", "minLength": 1, "maxLength": 300 }
+      }
+    },
+    "limitations": { "type": "array", "minItems": 1, "maxItems": 6, "items": { "type": "string", "minLength": 1, "maxLength": 300 } }
+  }
+}

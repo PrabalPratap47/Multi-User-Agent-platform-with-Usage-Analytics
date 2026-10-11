@@ -7,13 +7,15 @@ anywhere else, and the frontend never computes a token/cost number itself.
 
 **Verification status.** When this document was first written, the service had only been checked by manual trace. Since then it has been verified by execution:
 
-- **Fixture tests:** `tests/analyticsService.test.ts`, part of `npm test` (313/313 on 2026-10-09).
+- **Fixture tests:** `tests/analyticsService.test.ts` and `tests/finalCategoryAnalytics.test.ts`, part of `npm test`.
 - **API vs. database for every scope:** `tests/multiUserConcurrency.test.ts` and the real-OpenAI E2E run, where the database matched the analytics API on every metric. See `evaluation/e2e-test-report.md` §12; that comparison found and fixed the seed-data exclusion described below.
 - **Rendered dashboard:** compared in Chrome (`npm run verify:dashboard-run-outcomes`, and the Step 18/19 dashboard checks).
 
 The real-OpenAI E2E runner was last run before the successful/failed run-count follow-up.
 
 `GET /api/analytics/evaluation` is a placeholder that returns only a message. It is not one of the metrics below. Evaluation results come from `npm run eval:cv-classification` (see the main README).
+
+**Charts.** The ANALYTICS tab's doughnut chart plots metric 10b; the Admin → Users bar chart plots metric 5. Two other charts summarise lists the API has already scoped, counted in the browser: the final-decisions treemap on CV PROCESSING (from `GET /api/cv/results`) and the sentiment breakdown doughnut on SENTIMENT (from `GET /api/sentiment/results`). No token or cost number is computed in the frontend.
 
 ## Access control
 
@@ -60,6 +62,7 @@ the E2E run found it and `tests/analyticsService.test.ts` now guards it.
 | 8 | Error rate by agent | `GET /api/analytics/errors` | `getErrorRateByAgent` |
 | 9 | Average latency by agent | `GET /api/analytics/latency` | `getAverageLatencyByAgent` |
 | 10 | CV recommendation acceptance rate per category | `GET /api/analytics/acceptance-rate` | `getAcceptanceRateByCategory` |
+| 10b | Original AI recommendation vs final category, per category | `GET /api/analytics/final-categories` | `getFinalCategoryBreakdown` |
 | 11 | Time saved in person-hours | `GET /api/analytics/time-saved` | `getTimeSaved` |
 | — | Whether the token/cost totals are complete (missing or unknown usage) | `GET /api/analytics/usage-completeness` | `getUsageCompleteness` |
 
@@ -89,7 +92,7 @@ incomplete" when they are not.
 
 ### 5. Token consumption by user (`getTokensByUser`, admin only)
 
-Same sums as above, `GROUP BY "userId"`, joined to `users` for email.
+Same sums as above, `GROUP BY "userId"`, joined to `users` for email. Each row also has `totalTokens` (= `totalInputTokens + totalOutputTokens`) and `callsWithUnknownUsage` (calls stored with `errorCode: MISSING_USAGE_DATA`, i.e. 0 tokens because the provider sent no usage - never estimated). Shown as the bar chart in Admin → Users, where users with no usage appear at 0.
 Always unscoped by caller (it's the admin-only "all users" view by
 definition) - there is no `userId` scoping parameter on this one.
 
@@ -175,6 +178,40 @@ it), but are reported as separate `modify`/`reject` fields alongside
 `accept` and `totalDecisions`, so a reader who wants a different
 definition (e.g. treating MODIFY as "partially accepted") can derive it
 from the raw counts rather than being stuck with this one definition.
+
+### 10b. Original AI recommendation vs final category (`getFinalCategoryBreakdown`)
+
+Metric 10 counts every decision row, including ones later changed. This
+one counts each decided CV **once, by its latest decision** (newest
+`timestamp`, then highest `id`), so it shows where CVs ended up:
+
+- `originalCount`: decided CVs whose original `primaryCategory` (what the
+  agent proposed, never overwritten) is this category.
+- `finalCount`: decided CVs whose latest decision's persisted
+  `finalPrimaryCategory` is this category (the original for ACCEPT, the
+  chosen one for MODIFY).
+- `rejectedCount`: decided CVs whose latest decision is REJECT. A REJECT
+  stores no final category (DB CHECK constraint), so it is never counted
+  in any `finalCount`.
+
+- `acceptedCount` / `modifiedCount`: decided CVs whose latest decision is
+  ACCEPT / MODIFY (the Analytics doughnut chart shows these with
+  `rejectedCount`).
+
+So `sum(originalCount) = decidedCvCount = sum(finalCount) + rejectedCount = acceptedCount + modifiedCount + rejectedCount`.
+CVs with no decision are not counted. Primary categories only. Scoped by
+the CV's owner (a regular user sees their own CVs; an admin sees all, or
+one user's with `?userId=`), with the seed's demo recommendations
+excluded as for metric 10. Response:
+
+```json
+{ "decidedCvCount": 3, "acceptedCount": 1, "modifiedCount": 1, "rejectedCount": 1, "categories": [
+  { "category": "AI Engineer", "originalCount": 0, "finalCount": 1 },
+  { "category": "Back-End Developer", "originalCount": 1, "finalCount": 1 },
+  { "category": "Front-End Developer", "originalCount": 1, "finalCount": 0 },
+  { "category": "Web Automation", "originalCount": 1, "finalCount": 0 }
+] }
+```
 
 ### 11. Time saved in person-hours (`getTimeSaved`)
 
@@ -275,5 +312,5 @@ and each user, with seed runs present); and
 `npm run verify:dashboard-run-outcomes` (database -> API -> rendered
 dashboard in Chrome, CONTROLLED provider, no OpenAI calls).
 
-**Run with** `cd backend && npm test` (requires `.env.test` - see
-`backend/TESTING.md`). Last full run: 313/313 passing on 2026-10-09.
+**Run with** `cd backend && npm test -- analyticsService finalCategoryAnalytics`
+(requires `.env.test` - see `backend/TESTING.md`).

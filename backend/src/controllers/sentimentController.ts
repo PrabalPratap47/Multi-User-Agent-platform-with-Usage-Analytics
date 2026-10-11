@@ -62,6 +62,19 @@ export class SentimentController {
    * GET /api/sentiment/results/:id
    * A single result, ownership-enforced (self or admin).
    */
+  /** DELETE /api/sentiment/results/:id - permanently deletes one result (admin only). */
+  static deleteResult = asyncHandler(async (req: Request, res: Response) => {
+    if (!req.user) throw Errors.unauthorized();
+
+    const id = parseDbId(req.params.id, 'result id');
+    const deleted = await SentimentService.deleteResult(req.user, id);
+
+    res.json({
+      success: true,
+      data: deleted,
+    } as ApiResponse);
+  });
+
   static getResult = asyncHandler(async (req: Request, res: Response) => {
     if (!req.user) throw Errors.unauthorized();
 

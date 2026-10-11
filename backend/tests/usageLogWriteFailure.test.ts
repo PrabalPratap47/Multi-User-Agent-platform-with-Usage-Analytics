@@ -31,6 +31,7 @@ import {
 } from '../src/agents/CVClassificationAgent.js';
 import { CV_CATEGORIES } from '../src/utils/validators.js';
 import { AgentContext } from '../src/types/index.js';
+import { cvFeedbackFrom } from './fixtures/cvFeedback.js';
 
 const TEST_AGENT_NAME = 'Usage Log Write Failure Test Agent';
 const SERVICE_USER_EMAIL = 'usage-log-failure-service@test.local';
@@ -278,6 +279,7 @@ describe('usage logging - HTTP path when the usage-log insert fails', () => {
           secondaryCategories: [],
           confidence,
           rationale: [{ category: 'Back-End Developer', evidence: 'Node.js and Express backend engineer' }],
+          feedback: cvFeedbackFrom('Node.js and Express backend engineer'),
         }),
       }],
       model: 'gpt-4o',

@@ -4,7 +4,7 @@
   "description": "Required response shape for the CV Classification Agent. Every model response is validated against this schema (via the equivalent Zod schema in schema.ts) before being trusted.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["primaryCategory", "secondaryCategories", "confidence", "rationale"],
+  "required": ["primaryCategory", "secondaryCategories", "confidence", "rationale", "feedback"],
   "properties": {
     "primaryCategory": {
       "type": "string",
@@ -92,6 +92,12 @@
           "evidence": { "type": "string", "minLength": 1, "maxLength": 2000 }
         }
       }
+    },
+    "feedback": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1200,
+      "description": "2 to 4 complete sentences of constructive feedback about the CV (clarity, strengths, how experience and skills are presented, at least one practical improvement), based only on the CV text. Sentence count is checked at runtime (agents/cvClassification/feedback.ts)."
     }
   }
 }

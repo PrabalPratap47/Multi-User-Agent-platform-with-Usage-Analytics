@@ -1,4 +1,5 @@
 import type { BatchItemState, DecisionType } from '../../types/index.js';
+import { categoryLabel } from '../../utils/categoryLabels.js';
 
 /** Confidence is stored as 0-1; shown as a percentage with the raw value alongside. */
 export function formatConfidence(value: number | undefined): string {
@@ -64,7 +65,7 @@ export function DecisionBadge({ type }: { type: DecisionType | 'PENDING' }) {
 export function CategoryChip({ name, confidence }: { name: string; confidence?: number }) {
   return (
     <span className="inline-flex items-center gap-1 rounded-md border border-gray-200 bg-gray-50 px-2 py-0.5 text-sm text-gray-800">
-      {name}
+      {categoryLabel(name)}
       {confidence !== undefined && <span className="text-xs text-gray-500">{formatConfidence(confidence)}</span>}
     </span>
   );

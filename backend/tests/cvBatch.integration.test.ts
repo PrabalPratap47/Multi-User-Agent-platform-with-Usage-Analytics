@@ -12,6 +12,7 @@ import {
 } from '../src/agents/CVClassificationAgent.js';
 import { LLMService, type LLMProviderClient, type LLMProviderResponse } from '../src/services/llmService.js';
 import { CV_CATEGORIES } from '../src/utils/validators.js';
+import { cvFeedbackFrom } from './fixtures/cvFeedback.js';
 
 const EMAILS = {
   userA: 'cv-batch-user-a@test.local',
@@ -76,6 +77,7 @@ function alwaysSucceedsAgent(): CVClassificationAgent {
               rationale: [
                 { category: 'Back-End Developer', evidence: '5 years of experience with Node.js and Express.' },
               ],
+              feedback: cvFeedbackFrom('5 years of experience with Node.js and Express.'),
             }),
           },
         ],
@@ -172,7 +174,7 @@ describe('Batch CV processing - partial failure and invalid files', () => {
       .send({
         files: [
           { fileName: 'good1.txt', mimeType: 'text/plain', content: GENERIC_CV_CONTENT },
-          { fileName: 'bad.pdf', mimeType: 'application/pdf', content: GENERIC_CV_CONTENT },
+          { fileName: 'bad.doc', mimeType: 'application/msword', content: GENERIC_CV_CONTENT },
           { fileName: 'good2.txt', mimeType: 'text/plain', content: GENERIC_CV_CONTENT },
         ],
       });
@@ -200,7 +202,7 @@ describe('Batch CV processing - partial failure and invalid files', () => {
       .send({
         files: [
           { fileName: 'good.txt', mimeType: 'text/plain', content: GENERIC_CV_CONTENT },
-          { fileName: 'scan.pdf', mimeType: 'application/pdf', content: GENERIC_CV_CONTENT },
+          { fileName: 'scan.doc', mimeType: 'application/msword', content: GENERIC_CV_CONTENT },
         ],
       });
     const batchId = submitRes.body.data.batchId;
@@ -213,14 +215,14 @@ describe('Batch CV processing - partial failure and invalid files', () => {
 
     expect(items).toHaveLength(2);
     const good = items.find(i => i.fileName === 'good.txt')!;
-    const bad = items.find(i => i.fileName === 'scan.pdf')!;
+    const bad = items.find(i => i.fileName === 'scan.doc')!;
 
     expect(good).toMatchObject({ state: 'completed', error: null });
     const rec = await prisma.cvRecommendation.findUnique({ where: { id: good.recommendationId as number } });
     expect(rec?.cvDocumentId).toBe(good.documentId);
 
     expect(bad).toMatchObject({ state: 'failed', recommendationId: null });
-    expect(bad.error).toMatch(/Unsupported file type "application\/pdf"/);
+    expect(bad.error).toMatch(/Unsupported file type "application\/msword"/);
   });
 
   it('records a generic, safe reason (no model output) when the AI response fails validation', async () => {

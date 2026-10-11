@@ -22,9 +22,9 @@ function uploadProgressHandler(onProgress?: (progress: UploadProgress) => void) 
 // Identity is never sent: every request is authorized by the session token
 // that api.ts attaches, and the backend derives the user from it.
 export const cvService = {
-  /** Upload + classify one CV. Resolves when classification has finished. */
+  /** Upload + classify one CV (a .txt file's text or a base64 PDF). Resolves when classification has finished. */
   async classify(
-    params: { cvContent: string; fileName: string },
+    params: { cvContent: string; fileName: string } | { pdfBase64: string; fileName: string },
     onUploadProgress?: (progress: UploadProgress) => void
   ): Promise<CvRecommendation> {
     const res = await apiClient.post<{ data: CvRecommendation }>('/cv/classify', params, {
@@ -53,6 +53,11 @@ export const cvService = {
   async listResults(): Promise<CvRecommendation[]> {
     const res = await apiClient.get<{ data: CvRecommendation[] }>('/cv/results');
     return res.data.data;
+  },
+
+  /** Permanently deletes one CV document with its recommendations and decisions (owner or admin, enforced server-side). */
+  async deleteDocument(documentId: number): Promise<void> {
+    await apiClient.delete(`/cv/documents/${documentId}`);
   },
 
   async makeDecision(recommendationId: number, decision: CvDecisionRequest): Promise<CvDecisionRecord> {

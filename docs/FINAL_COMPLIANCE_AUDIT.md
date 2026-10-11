@@ -8,6 +8,18 @@
 | Overall status | **PARTIALLY VERIFIED.** Every assignment feature is implemented, and almost all are verified with evidence that applies to the current code. Two assignment clauses are only partly met (AUTH-06 "admin sees all agent runs", LOG-02 "every LLM call must log"). One operational issue (F-01: the developer's `dev.db` is one migration behind) would break usage logging in a demo run on that database. |
 | Step 22 updates | **F-01 RESOLVED** (migration applied to `dev.db`, 2026-10-09). **F-02 RESOLVED with residual risks** (usage-log write failures are now explicit and detectable; verified with stub providers only - the changed logging path has not been re-run against real OpenAI). **F-03 RESOLVED** (`GET /api/runs`, `GET /api/runs/:id` and the AGENT RUNS tab; CONTROLLED tests and browser checks). **F-05 RESOLVED** (the backend refuses to start with a missing, blank, short or published placeholder `JWT_SECRET`). **F-06 RESOLVED** (at most 3 provider calls in flight per batch). **F-07 RESOLVED** (runs left queued/running by a previous process are failed with an accurate reason at startup, before requests are accepted; not resumed). **F-10 RESOLVED** (per-user AI rate limit on the four AI-triggering endpoints; in memory, per process). **F-14 RESOLVED** (missing/unknown usage is counted by `GET /api/analytics/usage-completeness`, labelled on the dashboard totals and findable in AGENT RUNS; API and browser checks). **F-23 RESOLVED** (startup refuses a database whose schema is behind the checked-in migrations, or whose state can't be verified; read-only, before recovery and listening). Details in §8. The rest of this document is the Step 21 audit as written, except where a row is marked "Step 22". |
 
+> **Scope note (added 2026-10-11).** This audit and its Step 22 record trace the code up to 2026-10-10.
+>
+> Added later and **not traced here**:
+> - PDF CV upload (CV-06's "plain text only" note is superseded: text-based PDFs are now supported);
+> - generated CV feedback;
+> - the CV Skills Extraction & Gap Analysis Agent;
+> - charts (F-12: `recharts` is now used; `lucide-react` is still declared but unused);
+> - admin user management;
+> - admin-only deletions.
+>
+> F-11 was resolved on 2026-10-11: the unreachable second `/health` route was removed. The evidence dates and counts below are as of the audit. The current implementation is described in [ARCHITECTURE.md](../ARCHITECTURE.md).
+
 ## 1. Sources and method
 
 ### Requirement sources
@@ -223,7 +235,7 @@ All metrics are computed server-side in `services/analyticsService.ts` and shown
 
 - **The code:** `backend/src/controllers/analyticsController.ts` `getEvaluation` returns only `{ success: true, message: 'Evaluation metrics endpoint - to be implemented (needs a labeled dataset)' }` to any authenticated user. The frontend never calls it.
 - **The assignment** requires evaluation *metrics*: precision and recall per category, and logging accuracy. They exist and were produced by real runs (`npm run eval:cv-classification`, `npm run audit:logging-accuracy`, reports in `evaluation/`). Its dashboard list (11 items) does **not** include an evaluation view.
-- **The design** (`ARCHITECTURE.md`) planned an "Evaluation tab"; it was never built.
+- **The design** (the original design proposal, then in `ARCHITECTURE.md`; replaced on 2026-10-11 by the implementation architecture and kept in git history) planned an "Evaluation tab"; it was never built.
 
 **Classification: an incomplete, optional endpoint, not an assignment requirement** (F-13, Low). Its message is stale: the labelled dataset now exists. It is non-blocking. Step 22 options are a product decision: return the latest `evaluation/cv-classification-results.json` summary, or remove the route and its README mention.
 

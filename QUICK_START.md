@@ -36,6 +36,10 @@ cd backend
 npm run db:setup  # creates backend/data/dev.db, applies migrations, adds demo users
 ```
 
+`db:setup` is for a **new** database: its seed step deletes every row first.
+If `backend/data/dev.db` already holds data you want to keep, back it up and
+run `npm run db:migrate:deploy` instead.
+
 ### 4️⃣ Configure Frontend
 
 ```bash
@@ -117,7 +121,7 @@ multi-user-agent/
 ├── evaluation/        ← Evaluation dataset and generated reports
 ├── README.md          ← Main documentation (start here)
 ├── SETUP.md           ← Detailed setup guide
-└── ARCHITECTURE.md    ← Original design proposal
+└── ARCHITECTURE.md    ← How the system is built (canonical)
 ```
 
 ---
@@ -138,7 +142,7 @@ multi-user-agent/
 
 1. ✅ **Backend is running** → `/health` responds
 2. ✅ **Frontend is running** → Login works
-3. **Try the features** → CV PROCESSING, SENTIMENT and EXTERNAL LOGS tabs (CV and sentiment need `OPENAI_API_KEY`)
+3. **Try the features** → CV PROCESSING, SENTIMENT, SKILLS GAP ANALYSIS and EXTERNAL LOGS tabs (the three agent tabs need `OPENAI_API_KEY`); as admin, ADMIN USERS
 4. **Run the tests** → `cd backend && npm test` (no API key needed)
 
 See README.md for features, analytics definitions and all verification commands.
@@ -160,4 +164,4 @@ See README.md for features, analytics definitions and all verification commands.
 - Check backend logs: `npm run dev` output
 - Check frontend console: Browser DevTools (F12)
 - View database: `npm run db:studio`
-- Review ARCHITECTURE.md for design details
+- Review ARCHITECTURE.md for how the system is built
