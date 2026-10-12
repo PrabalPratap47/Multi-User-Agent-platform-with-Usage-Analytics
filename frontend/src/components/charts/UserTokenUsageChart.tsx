@@ -15,13 +15,16 @@ const shortLabel = (email: string) => (email.length > 24 ? `${email.slice(0, 23)
 
 /**
  * Total tokens per user (input + output, summed server-side from internal
- * llm_usage_logs by user id). Every user gets a bar - users without any
- * recorded usage show 0. Numbers are as recorded: calls without provider
- * usage are counted as 0 and flagged, never estimated.
+ * llm_usage_logs by user id). Every active user gets a bar - users without
+ * any recorded usage show 0. Deleted (deactivated) accounts are left out of
+ * the chart; their usage rows are kept, so global analytics stay exact.
+ * Numbers are as recorded: calls without provider usage are counted as 0
+ * and flagged, never estimated.
  */
 export function UserTokenUsageChart({ users, usage }: { users: UserSummary[]; usage: TokensByUser[] }) {
   const byId = new Map(usage.map(u => [u.userId, u]));
   const rows: Row[] = users
+    .filter(u => u.status === 'active')
     .map(u => {
       const used = byId.get(u.id);
       return {
@@ -72,7 +75,7 @@ export function UserTokenUsageChart({ users, usage }: { users: UserSummary[]; us
       </div>
       <p className="text-xs text-gray-600">
         Recorded provider usage of every internal AI call (CV Classification, Sentiment Analysis, Skills Gap Analysis), grouped by user id. Demo
-        seed data and imported external agent logs are not included.
+        seed data and imported external agent logs are not included. Deleted users are not shown.
         {unknownCalls > 0 && ` ${unknownCalls} call(s) had no usage data from the provider and are counted as 0.`}
       </p>
     </div>

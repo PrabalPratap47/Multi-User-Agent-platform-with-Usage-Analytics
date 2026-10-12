@@ -372,7 +372,7 @@ export function AdminUsersPanel() {
 
   return (
     <div className="space-y-6">
-      <SectionCard title="Token usage per user" description="Total tokens (input + output) recorded for each user's AI calls.">
+      <SectionCard title="Token usage per user" description="Total tokens (input + output) recorded for each active user's AI calls.">
         {(usage.loading || loading) && !(usage.data && users) && <LoadingState label="Loading token usage..." />}
         {usage.error && <ErrorState message={usage.error} onRetry={usage.reload} />}
         {usage.data && users && users.length > 0 && <UserTokenUsageChart users={users} usage={usage.data} />}

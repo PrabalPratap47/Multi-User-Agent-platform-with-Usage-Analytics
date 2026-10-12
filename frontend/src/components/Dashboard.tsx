@@ -10,7 +10,7 @@ import { OverviewSection } from './analytics/OverviewSection.js';
 import { AgentUsageSection } from './analytics/AgentUsageSection.js';
 import { TokenConsumptionSection } from './analytics/TokenConsumptionSection.js';
 import { PerformanceSection } from './analytics/PerformanceSection.js';
-import { CvClassificationSection } from './analytics/CvClassificationSection.js';
+import { CvClassificationSection, DecisionOutcomesSection } from './analytics/CvClassificationSection.js';
 import { ExternalAgentLogsTab } from './analytics/ExternalAgentLogsTab.js';
 import { CvProcessingTab } from './cv/CvProcessingTab.js';
 import { SentimentTab } from './sentiment/SentimentTab.js';
@@ -73,6 +73,7 @@ export function Dashboard() {
             <AgentUsageSection />
             <TokenConsumptionSection isAdmin={isAdmin} />
             <PerformanceSection />
+            <DecisionOutcomesSection />
             <CvClassificationSection />
           </div>
         )}

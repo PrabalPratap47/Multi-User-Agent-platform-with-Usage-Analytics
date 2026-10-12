@@ -83,6 +83,42 @@ export function ScrollableTable({ label, children }: { label: string; children: 
   );
 }
 
+const PAGER_BUTTON_CLASS =
+  'rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed';
+
+/** "Showing 26–50 of 120" with Previous / Next, for a server-paged list. */
+export function Pager({
+  label,
+  offset,
+  shown,
+  total,
+  pageSize,
+  onChange,
+}: {
+  label: string;
+  offset: number;
+  shown: number;
+  total: number;
+  pageSize: number;
+  onChange: (offset: number) => void;
+}) {
+  return (
+    <nav aria-label={label} className="mt-3 flex flex-wrap items-center justify-between gap-2">
+      <p className="text-sm text-gray-600" aria-live="polite">
+        Showing {offset + 1}–{offset + shown} of {total}
+      </p>
+      <div className="flex gap-2">
+        <button type="button" className={PAGER_BUTTON_CLASS} disabled={offset === 0} onClick={() => onChange(Math.max(0, offset - pageSize))}>
+          Previous
+        </button>
+        <button type="button" className={PAGER_BUTTON_CLASS} disabled={offset + shown >= total} onClick={() => onChange(offset + pageSize)}>
+          Next
+        </button>
+      </div>
+    </nav>
+  );
+}
+
 export function EmptyState({ message }: { message: string }) {
   return <p className="text-gray-500 italic py-6 text-center">{message}</p>;
 }

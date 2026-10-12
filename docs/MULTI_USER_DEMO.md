@@ -197,6 +197,6 @@ try { Invoke-RestMethod -Uri "$api/usage-logs/$u2Id" -Headers (Auth $t1) } catch
 | CV agent | `POST /api/cv/classify`, `POST /api/cv/batch`, `GET /api/cv/batch/:batchId/status`, `GET /api/cv/results(/:id)`, `POST /api/cv/results/:id/decision` |
 | Sentiment agent | `POST /api/sentiment/analyze`, `GET /api/sentiment/results(/:id)` |
 | Usage logs | `GET /api/usage-logs` (own; all for admin), `GET /api/usage-logs/:userId` (self or admin, else 403) |
-| Agent runs | `GET /api/runs` (own; all for admin, optional `?userId=` for admin), `GET /api/runs/:id` (owner or admin, else 403) |
+| Agent runs | `GET /api/runs` (own; all active users for admin, optional `?userId=` for admin), `GET /api/runs/:id` (owner or admin, else 403) |
 | Dashboard analytics | `GET /api/analytics/summary`, `/by-agent`, `/runs`, `/errors`, `/latency`, `/acceptance-rate`, `/time-saved` (own; global for admin) |
 | Admin only | `GET /api/users` (and user management: `POST /api/users`, `PUT /api/users/:id/password`, `DELETE /api/users/:id`), `GET /api/analytics/by-user`, the `DELETE` routes for CV documents, sentiment results and skills-gap analyses |

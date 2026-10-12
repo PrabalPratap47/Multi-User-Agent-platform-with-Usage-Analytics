@@ -77,6 +77,13 @@ export interface AgentRunPage {
   agents: string[];
 }
 
+/**
+ * Runs of deleted (deactivated) accounts are left out of the listing and
+ * details. The rows themselves are kept (a user delete is a soft delete), so
+ * run-count analytics and usage history stay exact.
+ */
+const ACTIVE_OWNER = { user: { deactivatedAt: null } } as const;
+
 /** Admin: every user, optionally narrowed by ?userId=. User: always and only their own runs. */
 function ownerScope(user: UserPayload, requestedUserId?: number): { userId?: number } {
   if (user.role === 'admin') {
@@ -140,6 +147,7 @@ export class AgentRunService {
     const offset = query.offset ?? 0;
     const where = {
       ...ownerScope(user, query.userId),
+      ...ACTIVE_OWNER,
       ...(query.agent ? { agentName: query.agent } : {}),
       ...(query.status ? { status: query.status } : {}),
       ...(query.usage === 'incomplete' ? incompleteUsageRunWhere : {}),
@@ -165,7 +173,8 @@ export class AgentRunService {
     if (!UUID_PATTERN.test(runId)) {
       throw Errors.badRequest('Invalid run id');
     }
-    const run = await prisma.agentRun.findUnique({ where: { id: runId }, select: RUN_SELECT });
+    // A deleted account's run reads as not found, like the listing that omits it.
+    const run = await prisma.agentRun.findFirst({ where: { id: runId, ...ACTIVE_OWNER }, select: RUN_SELECT });
     if (!run) {
       throw Errors.notFound('Agent run');
     }

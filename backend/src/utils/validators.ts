@@ -264,3 +264,28 @@ export const AgentRunListQuerySchema = z.object({
 export function validateAgentRunListQuery(data: unknown) {
   return AgentRunListQuerySchema.parse(data);
 }
+
+// GET /api/usage-logs paging (MY RECORDS). Without limit/offset the endpoint
+// keeps its original behaviour: the newest 500 rows. Same strict digit
+// patterns as the runs query; other parameters (e.g. ?userId=) are read
+// separately by the controller.
+export const USAGE_LOG_DEFAULT_LIMIT = 500;
+
+export const UsageLogListQuerySchema = z.object({
+  limit: z
+    .string()
+    .regex(/^\d{1,3}$/, 'limit must be an integer')
+    .transform(Number)
+    .refine(n => n >= 1 && n <= USAGE_LOG_DEFAULT_LIMIT, `limit must be between 1 and ${USAGE_LOG_DEFAULT_LIMIT}`)
+    .optional(),
+  offset: z
+    .string()
+    .regex(/^\d{1,7}$/, 'offset must be a non-negative integer')
+    .transform(Number)
+    .refine(n => n <= RUN_LIST_MAX_OFFSET, `offset must be at most ${RUN_LIST_MAX_OFFSET}`)
+    .optional(),
+});
+
+export function validateUsageLogListQuery(data: unknown) {
+  return UsageLogListQuerySchema.parse(data);
+}

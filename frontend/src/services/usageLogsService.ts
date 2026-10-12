@@ -1,14 +1,17 @@
 import apiClient from './api.js';
-import { UsageLogRecord } from '../types/index.js';
+import { UsageLogPage, UsageLogRecord } from '../types/index.js';
 
 export const usageLogsService = {
   /**
-   * The server scopes this to the caller's own records unless the caller
-   * is an admin - there is no client-side filtering happening here.
+   * One page, newest first. The server scopes this to the caller's own
+   * records unless the caller is an admin - there is no client-side
+   * filtering happening here.
    */
-  async getMine(): Promise<UsageLogRecord[]> {
-    const response = await apiClient.get<{ data: UsageLogRecord[] }>('/usage-logs');
-    return response.data.data;
+  async getMine(page: { limit: number; offset: number }): Promise<UsageLogPage> {
+    const response = await apiClient.get<{ data: UsageLogRecord[]; meta: { total: number; limit: number; offset: number } }>('/usage-logs', {
+      params: page,
+    });
+    return { logs: response.data.data, ...response.data.meta };
   },
 
   /**

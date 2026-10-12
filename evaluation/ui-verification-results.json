@@ -1,6 +1,6 @@
 {
   "overall": "PASS",
-  "generatedAt": "2026-10-11T07:43:25.226Z",
+  "generatedAt": "2026-10-12T06:02:33.803Z",
   "provider": "CONTROLLED (no OpenAI calls)",
   "browser": "Google Chrome (headless, via playwright-core)",
   "viewports": {
@@ -488,7 +488,7 @@
       "area": "CV",
       "name": "a CV record opens after upload, collapses to its summary line and expands again",
       "pass": true,
-      "detail": "▶ / ui-single.txt /  / Result #5 · classified 10/11/2026, 1:13:17 PM"
+      "detail": "▶ / ui-single.txt /  / Result #5 · classified 10/12/2026, 11:32:26 AM"
     },
     {
       "area": "Layout",

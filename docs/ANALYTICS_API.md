@@ -15,7 +15,7 @@ The real-OpenAI E2E runner was last run before the successful/failed run-count f
 
 `GET /api/analytics/evaluation` is a placeholder that returns only a message. It is not one of the metrics below. Evaluation results come from `npm run eval:cv-classification` (see the main README).
 
-**Charts.** The ANALYTICS tab's doughnut chart plots metric 10b; the Admin → Users bar chart plots metric 5. Two other charts summarise lists the API has already scoped, counted in the browser: the final-decisions treemap on CV PROCESSING (from `GET /api/cv/results`) and the sentiment breakdown doughnut on SENTIMENT (from `GET /api/sentiment/results`). No token or cost number is computed in the frontend.
+**Charts.** The ANALYTICS tab's "Decision outcomes" doughnut plots the accepted / modified / rejected counts of metric 10b (the per-category original-vs-final counts are returned by the API but not shown on the dashboard); the Admin → Users bar chart plots metric 5. Two other charts summarise lists the API has already scoped, counted in the browser: the final-decisions treemap on CV PROCESSING (from `GET /api/cv/results`) and the sentiment breakdown doughnut on SENTIMENT (from `GET /api/sentiment/results`). No token or cost number is computed in the frontend.
 
 ## Access control
 
@@ -92,7 +92,7 @@ incomplete" when they are not.
 
 ### 5. Token consumption by user (`getTokensByUser`, admin only)
 
-Same sums as above, `GROUP BY "userId"`, joined to `users` for email. Each row also has `totalTokens` (= `totalInputTokens + totalOutputTokens`) and `callsWithUnknownUsage` (calls stored with `errorCode: MISSING_USAGE_DATA`, i.e. 0 tokens because the provider sent no usage - never estimated). Shown as the bar chart in Admin → Users, where users with no usage appear at 0.
+Same sums as above, `GROUP BY "userId"`, joined to `users` for email. Each row also has `totalTokens` (= `totalInputTokens + totalOutputTokens`) and `callsWithUnknownUsage` (calls stored with `errorCode: MISSING_USAGE_DATA`, i.e. 0 tokens because the provider sent no usage - never estimated). Shown as the bar chart in Admin → Users, where active users with no usage appear at 0 and deleted (deactivated) users are left out of the chart. The API itself still returns their rows, and their usage stays in every global total.
 Always unscoped by caller (it's the admin-only "all users" view by
 definition) - there is no `userId` scoping parameter on this one.
 
@@ -256,7 +256,7 @@ doc) sees the methodology without needing to find this file.
 totals are known to be lower than the real usage, or where the real usage
 is unknown. It never changes or estimates a total. The definitions live in
 one place, `services/usageCompleteness.ts`, which `GET /api/runs?usage=incomplete`
-also uses, so the counts and the run list always agree.
+also uses, so the counts and the run list agree. One exception: the run list leaves out runs of deleted (deactivated) users, while these counts, like the token totals, still include them.
 
 | Field | Level | Counted when | What it means for the totals |
 |---|---|---|---|

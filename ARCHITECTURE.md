@@ -7,6 +7,8 @@ This file replaces the original design proposal of 2026-10-06, which was written
 ## Contents
 
 - [A. System overview](#a-system-overview)
+- [A1. Frontend architecture](#a1-frontend-architecture)
+- [A2. Backend architecture](#a2-backend-architecture)
 - [B. Authentication and authorization](#b-authentication-and-authorization)
 - [C. Agent architecture](#c-agent-architecture)
 - [D. CV processing and decisions](#d-cv-processing-and-decisions)
@@ -17,6 +19,7 @@ This file replaces the original design proposal of 2026-10-06, which was written
 - [I. Development and deployment](#i-development-and-deployment)
 - [J. Architecture decisions](#j-architecture-decisions)
 - [Assignment requirements and evaluation metrics](#assignment-requirements-and-evaluation-metrics)
+- [Appendix: Request flows](#appendix-request-flows)
 
 ---
 
@@ -79,6 +82,270 @@ OpenAI Chat Completions API ◄────────┘ (called only by llmSe
 - **Where numbers are computed.** Every ANALYTICS-tab number comes from `/api/analytics/*`, computed on the server. Two small summaries are counted in the browser from lists the API already returned and scoped: the treemap of final decisions on CV PROCESSING and the sentiment breakdown doughnut on SENTIMENT. The admin token-usage bar chart (ADMIN USERS) plots `GET /api/analytics/by-user`.
 
 Dashboard tabs: ANALYTICS, MY RECORDS, AGENT RUNS, CV PROCESSING, SENTIMENT, SKILLS GAP ANALYSIS, EXTERNAL LOGS, and ADMIN USERS for admins only (`frontend/src/components/Dashboard.tsx`).
+
+---
+
+## A1. Frontend architecture
+
+A single-page React application built with Vite. It holds no secrets and computes no token or cost metric; it renders what the API returns and checks input early for a better experience. The server re-validates everything.
+
+### Directory structure
+
+```
+frontend/
+├── index.html                    Vite entry page
+├── vite.config.ts                dev server on port 5173 (opens the browser), React plugin, "@" alias
+├── tailwind.config.js, postcss.config.js
+├── .env.example                  VITE_API_URL only (compiled into the bundle, so never a secret)
+└── src/
+    ├── main.tsx                  React root (StrictMode)
+    ├── App.tsx                   on load: validates a stored token with GET /api/auth/me, then shows LoginForm or Dashboard
+    ├── index.css                 Tailwind layers and the shared :focus-visible outline
+    ├── store/
+    │   └── authStore.ts          Zustand store: user, accessToken, refreshToken; mirrored to localStorage ("auth")
+    ├── hooks/
+    │   ├── useAuth.ts            login / logout actions; shows the server's own error message
+    │   ├── useAsyncData.ts       fetch-on-mount { data, loading, error, reload }, used by every data panel
+    │   └── useNavigate.ts        window.location helper (there is no client-side router)
+    ├── services/                 one module per API area, all through api.ts
+    │   ├── api.ts                Axios instance: base URL, Bearer header, one-shot refresh and replay on 401
+    │   ├── authService.ts        /api/auth/*
+    │   ├── cvService.ts          /api/cv/* (classify, batch, status, results, decisions, delete)
+    │   ├── sentimentService.ts   /api/sentiment/*
+    │   ├── skillsGapService.ts   /api/skills-gap/*
+    │   ├── analyticsService.ts   /api/analytics/*
+    │   ├── agentRunsService.ts   /api/runs
+    │   ├── usageLogsService.ts   /api/usage-logs
+    │   ├── externalAgentLogsService.ts  /api/import/*
+    │   └── usersService.ts       /api/users (admin)
+    ├── components/
+    │   ├── LoginForm.tsx         login form; lists the demo accounts only on the dev server
+    │   ├── Navbar.tsx            header with user, role badge and logout
+    │   ├── ProtectedRoute.tsx    renders children only for an authenticated user (optionally a required role)
+    │   ├── Dashboard.tsx         sticky tab bar; picks the tab component; admin-only tab for admins
+    │   ├── MyUsageLogs.tsx       MY RECORDS (25 rows per page)
+    │   ├── AgentRunsPanel.tsx    AGENT RUNS (filters, pagination, details)
+    │   ├── AdminUsersPanel.tsx   ADMIN USERS (token chart, create / change password / delete dialogs)
+    │   ├── analytics/            ANALYTICS sections and EXTERNAL LOGS
+    │   │   ├── OverviewSection.tsx, AgentUsageSection.tsx, TokenConsumptionSection.tsx,
+    │   │   │   PerformanceSection.tsx, CvClassificationSection.tsx, UsageCompletenessNotice.tsx
+    │   │   ├── ExternalAgentLogsTab.tsx
+    │   │   └── AnalyticsPrimitives.tsx   SectionCard, StatCard, ScrollableTable, Pager, Loading/Error/Empty states
+    │   ├── cv/                   CV PROCESSING
+    │   │   ├── CvProcessingTab.tsx       upload panel, live job, results list, treemap
+    │   │   ├── CvUploadPanel.tsx         file picker and browser-side checks
+    │   │   ├── ProcessingJobView.tsx     batch progress (polls status every 1.5 s)
+    │   │   ├── RecommendationCard.tsx    category, confidences, evidence, feedback, admin delete
+    │   │   ├── DecisionPanel.tsx         Accept / Modify / Reject form
+    │   │   └── cvUi.tsx                  shared CV UI pieces
+    │   ├── sentiment/SentimentTab.tsx    SENTIMENT (form, history, breakdown doughnut, admin delete)
+    │   ├── skillsGap/SkillsGapTab.tsx    SKILLS GAP ANALYSIS (form, result view, saved analyses)
+    │   └── charts/               Recharts components
+    │       ├── DonutChart.tsx, FinalDecisionsTreemap.tsx, UserTokenUsageChart.tsx
+    │       └── chartColors.ts
+    ├── types/index.ts            TypeScript shapes of the API responses
+    └── utils/
+        ├── apiError.ts           turns an Axios error into the server's message or "Could not reach the server"
+        ├── cvFiles.ts            browser CV checks (.txt/.pdf, sizes, PDF signature) and PDF base64 encoding
+        ├── categoryLabels.ts     display names (PSS → Passenger Service System, DCS → Departure Control System)
+        └── usageIssues.ts        wording for the "usage incomplete" badges
+```
+
+### Layers
+
+```
+components (tabs, panels, dialogs, charts)
+   │  call
+   ▼
+hooks (useAsyncData for reads, useAuth for login/logout)       store/authStore.ts (user + tokens)
+   │  call                                                          ▲ read by api.ts
+   ▼                                                                │
+services/*.ts (one function per endpoint) ──► services/api.ts (Axios) ──► Express API
+```
+
+- **No router.** `App.tsx` chooses between `LoginForm` and `Dashboard` from the auth store; `Dashboard` keeps the active tab in component state. The tab bar is sticky so it stays reachable while scrolling.
+- **Startup.** A token restored from `localStorage` is not trusted until `GET /api/auth/me` confirms it (it may be expired, revoked, or the role may have changed). On failure the store is cleared and the login form shown.
+- **Data fetching.** Every panel uses `useAsyncData(fetcher, deps)`. After a change (a decision, an import, a new user), the panel bumps a version number in `deps` to reload from the server instead of patching local copies.
+- **Pagination.** AGENT RUNS and MY RECORDS are paged on the server (25 rows, `limit`/`offset`, newest first) and share the `Pager` component ("Showing 26–50 of N", Previous / Next).
+- **Errors.** `utils/apiError.ts` shows the server's message (validation details included) or a readable network message. Loading states use `role="status"`, errors `role="alert"` with a Retry button.
+- **Role-specific UI.** Admin-only parts (ADMIN USERS tab, Delete buttons, user columns and filters) are shown from the stored role. This is convenience only: the server enforces every rule.
+- **Batch tracking.** The running batch id is kept in `sessionStorage`, so progress resumes after switching tabs within the same browser tab.
+- **Uploads.** `utils/cvFiles.ts` reads each file: `.txt` as text, `.pdf` as base64. One valid file goes to `POST /api/cv/classify`, two or more to `POST /api/cv/batch`.
+- **Accessibility and layout.** Landmarks, h1 → h2 → h3 headings, labelled controls, visible focus, WCAG AA contrast, tables that scroll inside their card on small screens (see [docs/UI_UX_REVIEW.md](docs/UI_UX_REVIEW.md)).
+
+### Tabs, components and endpoints
+
+| Tab | Component | Endpoints used |
+|---|---|---|
+| ANALYTICS | `analytics/*Section.tsx` | `/api/analytics/summary`, `/time-saved`, `/usage-completeness`, `/runs`, `/by-agent`, `/by-user` (admin), `/errors`, `/latency`, `/acceptance-rate`, `/final-categories` |
+| MY RECORDS | `MyUsageLogs.tsx` | `GET /api/usage-logs?limit=25&offset=…` |
+| AGENT RUNS | `AgentRunsPanel.tsx` | `GET /api/runs`, `GET /api/runs/:id` |
+| CV PROCESSING | `cv/*` | `POST /api/cv/classify`, `POST /api/cv/batch`, `GET /api/cv/batch/:batchId/status`, `GET /api/cv/results`, `POST /api/cv/results/:id/decision`, `GET /api/cv/results/:id/decisions`, `DELETE /api/cv/documents/:documentId` (admin) |
+| SENTIMENT | `sentiment/SentimentTab.tsx` | `POST /api/sentiment/analyze`, `GET /api/sentiment/results`, `DELETE /api/sentiment/results/:id` (admin) |
+| SKILLS GAP ANALYSIS | `skillsGap/SkillsGapTab.tsx` | `GET /api/skills-gap/roles`, `POST /api/skills-gap/analyze`, `GET /api/skills-gap/analyses`, `DELETE /api/skills-gap/analyses/:id` (admin) |
+| EXTERNAL LOGS | `analytics/ExternalAgentLogsTab.tsx` | `POST /api/import/logs`, `GET /api/import/logs`, `GET /api/import/logs/:importId`, `GET /api/import/stats` |
+| ADMIN USERS | `AdminUsersPanel.tsx` | `GET /api/users`, `POST /api/users`, `PUT /api/users/:id/password`, `DELETE /api/users/:id`, `GET /api/analytics/by-user` |
+
+### Charts
+
+| Chart | Where | Data |
+|---|---|---|
+| Decision outcomes doughnut | ANALYTICS → Decision outcomes (its own card, above CV Classification) | `GET /api/analytics/final-categories` (accepted / modified / rejected) |
+| Final decisions treemap | CV PROCESSING | Counted in the browser from `GET /api/cv/results` |
+| Sentiment breakdown doughnut | SENTIMENT | Counted in the browser from `GET /api/sentiment/results` |
+| Token usage per user (bar chart, with tooltip) | ADMIN USERS | `GET /api/analytics/by-user`, active users only (deleted users are left out; their usage rows are kept) |
+
+---
+
+## A2. Backend architecture
+
+An Express 4 application in TypeScript (ES modules), run with `tsx watch` in development and compiled to `dist/` with `tsc` for `npm start`.
+
+### Directory structure
+
+```
+backend/
+├── package.json                  scripts (dev, build, db:*, test, verify:*, eval:*, audit:*)
+├── .env.example, .env.test.example   templates for .env.local / .env.test (both git-ignored)
+├── vitest.config.ts              test runner config (Vitest sets NODE_ENV=test; raises the AI rate limit for tests)
+├── prisma/
+│   ├── schema.prisma             12 models (SQLite)
+│   ├── migrations/               6 migrations (the only ones Prisma applies)
+│   └── migrations_postgresql_archive/   earlier PostgreSQL history, reference only
+├── data/                         SQLite files and backups (git-ignored except .gitkeep)
+├── tests/                        37 *.test.ts files, setup.ts, helpers.ts, fixtures/
+└── src/
+    ├── server.ts                 startup: migration check → run recovery → listen
+    ├── app.ts                    Express app: CORS, JSON body (10 MB), request logging, routers, 404, error handler
+    ├── config/
+    │   ├── env.ts                loads .env.local (.env.test under tests) and validates every variable with Zod
+    │   ├── logging.ts            Winston logger (console, JSON metadata)
+    │   └── modelPricing.ts       per-model token prices (the only place prices live)
+    ├── middleware/
+    │   ├── authMiddleware.ts     authenticateToken, requireUser, requireAdmin, requireSelfOrAdmin
+    │   ├── aiRateLimit.ts        per-user sliding-window limit on AI-starting routes
+    │   ├── loggingMiddleware.ts  logs method, path, status, duration, IP (never bodies)
+    │   └── errorHandler.ts       AppError + Errors.* helpers; maps Zod, JSON-parse and size errors
+    ├── routes/                   URL → middleware → controller
+    │   └── auth, users, cv, sentiment, skillsGap, analytics, runs, usageLogs, import
+    ├── controllers/              parse ids, call the service, shape { success, data }
+    │   └── authController, usersController, cvController, sentimentController, skillsGapController,
+    │       analyticsController, agentRunController, importController,
+    │       usageLogController (the one controller that reads its table, llm_usage_logs, directly)
+    ├── services/                 business logic, ownership checks, database access
+    │   ├── authService.ts        login, sessions, refresh rotation, logout, resolveSession
+    │   ├── usersService.ts       admin user management
+    │   ├── cvClassificationService.ts   single CV upload/classify, results, admin delete
+    │   ├── cvBatchService.ts     batch submission, 3-at-a-time processing, status
+    │   ├── cvDecisionService.ts  Accept / Modify / Reject (append-only)
+    │   ├── sentimentService.ts   sentiment runs, results, admin delete
+    │   ├── skillsGapService.ts   skills-gap runs, saved analyses, admin delete
+    │   ├── llmService.ts         the only OpenAI client; measures and logs every call
+    │   ├── usageLogService.ts    writes llm_usage_logs rows (logCall)
+    │   ├── analyticsService.ts   every dashboard metric
+    │   ├── usageCompleteness.ts  shared rules for "usage incomplete"
+    │   ├── agentRunService.ts    run listing and details
+    │   ├── runRecoveryService.ts fails runs interrupted by a restart
+    │   └── externalAgentLogService.ts   external log import and statistics
+    ├── agents/
+    │   ├── Agent.ts              abstract base (must call the LLM through LLMService)
+    │   ├── CVClassificationAgent.ts, SentimentAgent.ts, SkillsGapAgent.ts
+    │   ├── cvClassification/     prompt.ts, schema.ts (+ JSON Schema), outputGuard.ts, feedback.ts, categoryDefinitions.ts
+    │   ├── sentiment/            prompt.ts, schema.ts (+ JSON Schema), outputGuard.ts
+    │   ├── skillsGap/            roles.ts, prompt.ts, schema.ts (+ JSON Schema), outputGuard.ts
+    │   └── shared/textOverlap.ts significant-word overlap used by the grounding checks
+    ├── externalLogs/             format.ts (parsers, record schema, status heuristic), externalLogRecord.schema.json
+    ├── db/
+    │   ├── client.ts             PrismaClient on the resolved SQLite file
+    │   ├── sqlitePath.ts         resolves file: URLs exactly as the Prisma CLI does
+    │   ├── migrationCheck.ts     read-only startup migration check
+    │   ├── testDatabaseGuard.ts, resetTestDatabase.ts   test-database safety
+    │   └── seed.ts               development seed (deletes all rows first)
+    ├── utils/
+    │   ├── validators.ts         Zod request schemas (login, CV, batch, decision, users, import, runs query, ...)
+    │   ├── ids.ts                strict id parsing (positive 32-bit integers)
+    │   ├── categoryList.ts       validated reads of JSON category lists
+    │   ├── costCalculator.ts     tokens × price
+    │   └── pdfText.ts, pdfTextWorker.ts   PDF text extraction in a worker thread
+    ├── types/                    index.ts (shared types), express.d.ts (req.user, req.sessionId)
+    └── evaluation/               CLI scripts behind verify:*, eval:* and audit:* (not part of the server)
+```
+
+### Layers and request pipeline
+
+```
+HTTP request
+  │
+  ├─ cors (FRONTEND_URL only) → express.json (10 MB) → requestLogger
+  │
+  ├─ router (/api/<area>)
+  │    ├─ authenticateToken      verify HS256 JWT → resolveSession(sid) in the DB → req.user, req.sessionId
+  │    ├─ requireUser / requireAdmin / requireSelfOrAdmin
+  │    └─ aiRateLimit()          only on routes that start AI work
+  │
+  ├─ controller                  parse ids (utils/ids.ts), call the service, respond { success: true, data }
+  │
+  ├─ service                     Zod validation, ownership/role checks, transactions, agent calls
+  │    ├─ agent → LLMService.call() → OpenAI → UsageLogService.logCall() → llm_usage_logs
+  │    └─ Prisma → SQLite
+  │
+  └─ errorHandler (on any throw) ZodError → 400 with per-field details; AppError → its status;
+                                 malformed JSON → 400; body too large → 413; anything else → 500 "Internal server error"
+```
+
+Each layer has one job: **routes** decide who may reach an endpoint, **controllers** translate HTTP to service calls, **services** own the rules and the data, and **agents** own the prompt and output contract for one task. (Exception: `usageLogController` queries `llm_usage_logs` itself, scoped to `req.user`.) Services never trust a user id from the request: they receive the `UserPayload` the middleware built from the session.
+
+### Key services
+
+| Service | Responsibility |
+|---|---|
+| `AuthService` | Credential check with throttling, session creation (hashed refresh token), access-token signing, rotation, logout, `resolveSession` for every request |
+| `UsersService` | Admin create / change password / soft delete, with last-admin and self-delete protection |
+| `CvClassificationService` | Store the CV, create the run, call the agent, store the recommendation, mark the run; list and read results with ownership checks; admin delete |
+| `CvBatchService` | Validate the batch, create documents and `PENDING` runs, return 202, process files 3 at a time with per-file checks, report live status |
+| `CvDecisionService` | Validate and append decisions; compute the final category for ACCEPT; list a recommendation's history |
+| `SentimentService`, `SkillsGapService` | The same run lifecycle for their agents; results, admin delete |
+| `LLMService` | Build the provider request, measure latency, read `usage`, redact errors, hand every call to `UsageLogService` |
+| `UsageLogService` | Price the call, insert the usage row, report (never throw) if the write fails |
+| `AnalyticsService` | Every metric, scoped by `userScope()` and excluding seed data |
+| `AgentRunService`, `usageCompleteness` | Run listing with filters and "usage incomplete" flags; runs of deleted users are left out |
+| `ExternalAgentLogService` | Parse and validate imports, store valid records, separate statistics |
+| `runRecoveryService` | At startup, fail runs a previous process left `PENDING`/`RUNNING` |
+
+### LLM call and logging (simplified from `services/llmService.ts`)
+
+```ts
+async call({ systemInstructions, userContent, agentName, context, runId, model, maxTokens = 1024 }) {
+  const started = performance.now();
+  try {
+    const response = await this.client.messages.create({ // OpenAI Chat Completions adapter
+      model: model ?? config.OPENAI_MODEL,
+      system: systemInstructions,                         // fixed agent prompt, never user text
+      messages: [{ role: 'user', content: userContent }], // delimited, untrusted data
+      max_tokens: maxTokens,                              // sent as max_completion_tokens; no tools
+    });
+    const inputTokens = response.usage?.prompt_tokens;     // provider counts only, never estimated
+    const outputTokens = response.usage?.completion_tokens;
+    // both present → logged as is; otherwise 0/0 with errorCode MISSING_USAGE_DATA
+    await usageLogService.logCall({ status: 'SUCCESS', userId: context.userId, agentName, runId,
+      model: response.model, inputTokens, outputTokens, latencyMs: performance.now() - started,
+      providerResponseId: response.id });
+    return { responseText, usage };
+  } catch (error) {
+    await usageLogService.logCall({ status: 'ERROR', inputTokens: 0, outputTokens: 0,
+      latencyMs: performance.now() - started, errorCode, errorMessage: redactKeys(message), ... });
+    throw new LLMServiceError(...);                       // after the row is written
+  }
+}
+```
+
+### Startup sequence (`src/server.ts`)
+
+1. `config/env.ts` validates the environment (refuses a weak or placeholder `JWT_SECRET`, invalid limits).
+2. `db/client.ts` resolves the SQLite file and refuses `test.db` outside tests.
+3. `checkMigrations` compares `prisma/migrations/` with `_prisma_migrations` (read-only); any mismatch or unreadable state → `Refusing to start`, exit 1.
+4. `recoverInterruptedRuns` fails runs left unfinished by a previous process.
+5. `app.listen(BACKEND_PORT)`; warnings if `OPENAI_API_KEY` is empty or the model has no price.
 
 ---
 
@@ -299,7 +566,7 @@ Six additive migrations in `backend/prisma/migrations/` (SQLite baseline 2026-10
 
 | Action | Removed | Kept |
 |---|---|---|
-| Admin deletes a user | Nothing (soft delete); sessions revoked | Everything, including the email (stays reserved) |
+| Admin deletes a user | Nothing (soft delete); sessions revoked; the user disappears from the Admin → Users token chart and their runs from AGENT RUNS | Everything, including the email (stays reserved) and their usage in the global analytics totals |
 | Admin deletes a CV document | CV text, its recommendations and decisions | Agent runs (unlinked), usage logs |
 | Admin deletes a sentiment result / skills-gap analysis | That result | Its agent run and usage logs |
 | `npm run db:seed` / `db:setup` | **Every row in the target database** | Nothing |
@@ -453,3 +720,83 @@ The required evaluation metrics and how they are produced:
 | Time saved in person-hours | `GET /api/analytics/time-saved` (estimate) | Shown on the dashboard as "Estimated time saved" |
 
 The real-OpenAI evidence (evaluation, logging accuracy, multi-user, prompt injection, E2E) dates from 2026-10-08/09. It was not re-run after the later changes (rate limiting, run listing, PDF upload, CV feedback, Skills Gap agent, user management), which were verified with stub providers and browser checks only.
+
+---
+
+## Appendix: Request flows
+
+### 1. Login, page load and token refresh
+
+```
+1. LoginForm → useAuth.login → POST /api/auth/login { email, password }
+2. AuthService: throttle check → bcrypt compare → refresh_tokens row (SHA-256 hash) → sign JWT { id, email, role, sid }
+3. 200 { accessToken, refreshToken, user } → authStore.setAuth → localStorage "auth" → Dashboard
+4. Page reload: App.tsx → GET /api/auth/me with the stored token → confirmed user, or logout
+5. Any request → 401 (access token expired) → api.ts → POST /api/auth/refresh { refreshToken }
+   → old session revoked, new pair issued → original request replayed once; a failed refresh logs out
+```
+
+### 2. Classify one CV and decide
+
+```
+1. CV PROCESSING → CvUploadPanel: browser checks (.txt/.pdf, size, signature) → .pdf read as base64
+2. POST /api/cv/classify { cvContent | pdfBase64, fileName }
+     authenticateToken → requireUser → aiRateLimit (1 run)
+3. CvClassificationService: PDF → extracted text (worker) → Zod request checks
+   → cv_documents row → agent_runs row (RUNNING, owner = session user)
+4. CVClassificationAgent: fixed system prompt + delimited CV → LLMService → OpenAI
+   → usage row in llm_usage_logs → strict schema + grounding + feedback + leak checks
+   → (one repair retry on failure) → sanitised result
+5. cv_recommendations row (original recommendation) → run SUCCESS → 201 with the result
+   (on final failure: run ERROR with a safe reason, 502, nothing stored)
+6. RecommendationCard shows category, confidences, evidence, feedback
+7. DecisionPanel → POST /api/cv/results/:id/decision { decisionType, finalPrimaryCategory?, reason? }
+   → CvDecisionService: ownership (or admin) + rules → append recommendation_decisions row → 201
+8. Dashboard panels reload; ANALYTICS acceptance rate and final categories include the decision
+```
+
+### 3. Batch upload with progress
+
+```
+1. Two or more valid files → POST /api/cv/batch { files: [{ fileName, mimeType, content }] }
+     aiRateLimit charges one run per file; over the budget → 429 for the whole batch
+2. CvBatchService: one cv_documents row + one PENDING agent_runs row per file (same batchId) → 202 { batchId }
+3. In the background: at most 3 files at a time → RUNNING → per-file checks → agent → SUCCESS / ERROR
+4. ProcessingJobView polls GET /api/cv/batch/:batchId/status every 1.5 s (batch id kept in sessionStorage)
+   → queued / processing / completed / failed counts and per-file reasons
+5. Finished: "All N CVs were classified", "Partially completed: X of N ...", or "None of the N CVs ..."
+```
+
+### 4. Admin views analytics and drills into one user
+
+```
+1. Admin opens ANALYTICS → each section calls its /api/analytics/* endpoint
+2. authenticateToken loads the admin's current role from the database
+3. AnalyticsService.userScope(admin, ?userId): no userId → all users; ?userId=N → user N only
+   (for a regular user ?userId is ignored and the scope is always their own id)
+4. Prisma aggregates over llm_usage_logs / agent_runs / cv_recommendations / recommendation_decisions,
+   seed data excluded → JSON → stat cards, tables and the doughnut chart
+5. ADMIN USERS → GET /api/analytics/by-user → token usage bar chart per user
+```
+
+### 5. Import an external agent log
+
+```
+1. EXTERNAL LOGS → source agent name + .json / .jsonl file → POST /api/import/logs { sourceAgentName, fileName, format, content, notes? }
+2. ExternalAgentLogService: envelope validation (≤ 2 MB) → parse → validate each record independently
+3. One external_agent_logs row (counts + parseErrors) and one external_agent_log_records row per valid record
+4. 201 with { totalRecords, validRecords, invalidRecords, parseErrors }
+5. GET /api/import/stats and /api/import/logs refresh the tab; internal analytics are unaffected
+```
+
+### 6. Admin manages a user
+
+```
+Create:          POST /api/users { name, email, password, role } → Zod rules → case-insensitive duplicate check
+                 → bcrypt hash → users row → 201 (no password data returned)
+Change password: PUT /api/users/:id/password { password } → bcrypt hash + revoke the account's sessions
+                 (the admin's own current session is kept when changing their own password) in one transaction
+Delete:          DELETE /api/users/:id → one conditional UPDATE sets deactivatedAt (never the last active admin,
+                 never oneself) + revoke sessions → the next request with any of their tokens gets 401;
+                 all of the user's records stay
+```

@@ -207,7 +207,7 @@ from `users` is `ON DELETE CASCADE` and would erase the person's history.
 |---|---|
 | The `users` row (email, name, role, password hash) | **Kept**, marked deactivated; the email stays reserved |
 | `refresh_tokens` (sessions) | **Revoked** (`revokedAt` set) in the same transaction |
-| CV documents, recommendations, decisions, sentiment results, skills gap analyses, agent runs, `llm_usage_logs`, external log imports | **Kept** unchanged, so analytics and audit history stay accurate |
+| CV documents, recommendations, decisions, sentiment results, skills gap analyses, agent runs, `llm_usage_logs`, external log imports | **Kept** unchanged, so analytics and audit history stay accurate. The user is no longer shown in the Admin → Users token chart, and their runs are left out of AGENT RUNS (`GET /api/runs`) |
 
 A deactivated account cannot log in (same message as a wrong password),
 refresh, or use any previously issued access token (`AuthService.resolveSession`

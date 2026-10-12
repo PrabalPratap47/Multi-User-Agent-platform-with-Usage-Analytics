@@ -326,6 +326,14 @@ export interface UsageLogRecord {
   agent?: { name: string };
 }
 
+/** One page of GET /api/usage-logs (newest first; `total` = every row in the caller's scope). */
+export interface UsageLogPage {
+  logs: UsageLogRecord[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
 export type AgentRunStatus = 'PENDING' | 'RUNNING' | 'SUCCESS' | 'ERROR';
 
 /** One row of GET /api/runs - run metadata only, never CV/feedback text or tokens. */

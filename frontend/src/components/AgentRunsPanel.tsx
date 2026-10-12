@@ -5,7 +5,7 @@ import { usersService } from '../services/usersService.js';
 import { AgentRunStatus, AgentRunSummary } from '../types/index.js';
 import { USAGE_ISSUE_TEXT } from '../utils/usageIssues.js';
 import { categoryLabel } from '../utils/categoryLabels.js';
-import { EmptyState, ErrorState, LoadingState, SectionCard, ScrollableTable } from './analytics/AnalyticsPrimitives.js';
+import { EmptyState, ErrorState, LoadingState, Pager, SectionCard, ScrollableTable } from './analytics/AnalyticsPrimitives.js';
 
 const PAGE_SIZE = 25;
 const STATUSES: AgentRunStatus[] = ['PENDING', 'RUNNING', 'SUCCESS', 'ERROR'];
@@ -19,8 +19,6 @@ const STATUS_STYLES: Record<AgentRunStatus, { label: string; className: string }
 
 const SELECT_CLASS =
   'mt-1 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500';
-const PAGER_BUTTON_CLASS =
-  'rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed';
 
 function RunStatusBadge({ status }: { status: AgentRunStatus }) {
   const { label, className } = STATUS_STYLES[status];
@@ -95,7 +93,7 @@ export function AgentRunsPanel({ isAdmin }: { isAdmin: boolean }) {
       title={isAdmin ? 'Agent runs (all users)' : 'My agent runs'}
       description={
         isAdmin
-          ? 'Every agent run from every user, newest first. Shows run metadata only - CV text, feedback text, prompts and tokens stay in their own views.'
+          ? 'Every agent run from every active user, newest first (runs of deleted users are not shown). Shows run metadata only - CV text, feedback text, prompts and tokens stay in their own views.'
           : 'Your own agent runs, newest first. Scoped server-side to your account - the backend never returns another user’s runs here.'
       }
     >
@@ -110,7 +108,8 @@ export function AgentRunsPanel({ isAdmin }: { isAdmin: boolean }) {
               className={SELECT_CLASS}
             >
               <option value="">All users</option>
-              {(users ?? []).map(u => (
+              {/* Deleted accounts' runs are not listed, so they are not offered as a filter either. */}
+              {(users ?? []).filter(u => u.status === 'active').map(u => (
                 <option key={u.id} value={u.id}>{u.email}</option>
               ))}
             </select>
@@ -229,29 +228,14 @@ export function AgentRunsPanel({ isAdmin }: { isAdmin: boolean }) {
             </table>
           </ScrollableTable>
 
-          <nav aria-label="Agent runs pages" className="mt-3 flex flex-wrap items-center justify-between gap-2">
-            <p className="text-sm text-gray-600" aria-live="polite">
-              Showing {page.offset + 1}–{page.offset + page.runs.length} of {page.total}
-            </p>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                className={PAGER_BUTTON_CLASS}
-                disabled={page.offset === 0}
-                onClick={() => { setOffset(Math.max(0, page.offset - PAGE_SIZE)); setExpanded(null); }}
-              >
-                Previous
-              </button>
-              <button
-                type="button"
-                className={PAGER_BUTTON_CLASS}
-                disabled={page.offset + page.runs.length >= page.total}
-                onClick={() => { setOffset(page.offset + PAGE_SIZE); setExpanded(null); }}
-              >
-                Next
-              </button>
-            </div>
-          </nav>
+          <Pager
+            label="Agent runs pages"
+            offset={page.offset}
+            shown={page.runs.length}
+            total={page.total}
+            pageSize={PAGE_SIZE}
+            onChange={next => { setOffset(next); setExpanded(null); }}
+          />
         </>
       )}
     </SectionCard>

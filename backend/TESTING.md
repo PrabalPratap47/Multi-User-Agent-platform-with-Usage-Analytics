@@ -1,6 +1,6 @@
 # Testing
 
-**Runner**: [Vitest](https://vitest.dev/) + [Supertest](https://github.com/ladjs/supertest), 35 test files in `tests/` (plus `setup.ts`, `helpers.ts` and `fixtures/`). The last full-suite result recorded in the documentation is 415/415 (25 files) on 2026-10-10; the 10 files added since were run individually. Run `npm test` for a current total.
+**Runner**: [Vitest](https://vitest.dev/) + [Supertest](https://github.com/ladjs/supertest), 37 test files in `tests/` (plus `setup.ts`, `helpers.ts` and `fixtures/`). Last full run: 539/539 on 2026-10-12.
 **What the tests run against**: the real Express `app` (imported directly, never bound to a port) talking to a real SQLite database file (`backend/data/test.db`) through the real Prisma Client — no mocking of Prisma, JWT, or bcrypt. This is deliberate: authorization bugs are exactly the kind of thing that mocks paper over. The LLM provider is the only thing replaced (an injected stub client), so **no test calls OpenAI**.
 
 The table of every verification command (what each proves, what it does not, and what it needs) is in the main [README](../README.md#tests-and-verification). This file covers the test suite, its database and the auth/RBAC proofs in detail.
@@ -31,6 +31,8 @@ The table of every verification command (what each proves, what it does not, and
 | `cvPdfUpload.test.ts` | PDF text extraction limits and failures; single PDF and mixed PDF/TXT batches |
 | `cvFeedback.test.ts` | CV feedback: 2-4 sentence schema rule, grounding in the CV (generic or injected feedback rejected), stored and returned for single and batch processing, JSON Schema sync |
 | `cvDelete.test.ts`, `sentimentDelete.test.ts` | Admin-only deletion of CV documents and sentiment results; runs and usage logs kept; 403 for every regular user |
+| `agentRunsDeletedUser.test.ts` | After a user is deleted, their runs leave `GET /api/runs` (list, total, every filter) and `GET /api/runs/:id` returns 404; the rows are kept and run-count analytics are unchanged; other users unaffected |
+| `usageLogsPagination.test.ts` | `GET /api/usage-logs` paging: pages newest first without overlap, `meta.total` per scope (user, admin, admin `?userId=`), unchanged default without paging parameters, 400 for invalid values |
 | `finalCategoryAnalytics.test.ts` | Original vs final category analytics (`/api/analytics/final-categories`) |
 | `skillsGapAgent.test.ts`, `skillsGapSchema.test.ts`, `skillsGap.integration.test.ts` | Skills-gap agent: extraction against the selected role, role rules and non-fabrication (safe error after one repair), prompt injection, schema and JSON Schema sync, API isolation, admin-only delete, PSS/DCS roles |
 

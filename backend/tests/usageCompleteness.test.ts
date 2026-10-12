@@ -26,6 +26,7 @@ import { LLMService, MISSING_USAGE_ERROR_CODE, type LLMProviderRequest, type LLM
 import { recoverInterruptedRuns } from '../src/services/runRecoveryService.js';
 import { calculateCost } from '../src/utils/costCalculator.js';
 import { CV_CATEGORIES } from '../src/utils/validators.js';
+import { cvFeedbackFrom } from './fixtures/cvFeedback.js';
 
 const EMAILS = {
   userA: 'completeness-a@test.local',
@@ -60,7 +61,13 @@ function stubProvider() {
   const confidence: Record<string, number> = {};
   for (const category of CV_CATEGORIES) confidence[category] = 0;
   confidence['Back-End Developer'] = 0.9;
-  const text = JSON.stringify({ primaryCategory: 'Back-End Developer', secondaryCategories: [], confidence, rationale: [{ category: 'Back-End Developer', evidence: EVIDENCE }] });
+  const text = JSON.stringify({
+    primaryCategory: 'Back-End Developer',
+    secondaryCategories: [],
+    confidence,
+    rationale: [{ category: 'Back-End Developer', evidence: EVIDENCE }],
+    feedback: cvFeedbackFrom(EVIDENCE),
+  });
   let seq = 0;
   return {
     messages: {
