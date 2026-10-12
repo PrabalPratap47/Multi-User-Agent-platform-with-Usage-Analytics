@@ -112,8 +112,8 @@ Run from the repository root unless a step says otherwise. The blocks are bash. 
 
 ```bash
 # 0. Clone
-git clone https://github.com/<owner>/<repository>.git
-cd <repository>
+git clone https://github.com/PrabalPratap47/Multi-User-Agent-platform-with-Usage-Analytics.git
+cd Multi-User-Agent-platform-with-Usage-Analytics
 
 # 1. Install both workspaces (also generates the Prisma Client)
 npm install
