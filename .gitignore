@@ -59,3 +59,12 @@ Thumbs.db
 tmp/
 temp/
 *.tmp
+
+# Archives (e.g. a zipped copy of the project bundles .env.local, the
+# databases and node_modules - never commit one)
+*.zip
+*.7z
+*.rar
+*.tar
+*.tar.gz
+*.tgz

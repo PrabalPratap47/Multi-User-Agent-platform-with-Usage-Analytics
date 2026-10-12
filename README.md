@@ -14,16 +14,20 @@ A full-stack web application where several authenticated users run three LLM age
 ## Contents
 
 - [Verification status](#verification-status)
+- [Technology stack](#technology-stack)
+- [Project structure](#project-structure)
 - [Prerequisites](#prerequisites)
 - [Setup](#setup)
 - [OpenAI configuration and key safety](#openai-configuration-and-key-safety)
 - [Demo accounts (local development only)](#demo-accounts-local-development-only)
 - [Features at a glance](#features-at-a-glance)
+- [Authentication, roles and analytics](#authentication-roles-and-analytics)
 - [API endpoints](#api-endpoints)
 - [Commands](#commands)
 - [Tests and verification](#tests-and-verification)
 - [Documentation index](#documentation-index)
 - [Known limitations](#known-limitations)
+- [Security considerations](#security-considerations)
 - [Troubleshooting](#troubleshooting)
 
 ## Verification status
@@ -40,8 +44,60 @@ A full-stack web application where several authenticated users run three LLM age
 | CV classification precision / recall | [evaluation/cv-classification-report.md](evaluation/cv-classification-report.md) (2026-10-09, 27 samples) | 1.00 for every category; the dataset is small. Predates CV feedback |
 | UI regression (`npm run verify:ui`) | `evaluation/ui-verification-results.json` (2026-10-11, 85/85, Chrome, controlled provider) | Headless Chrome at emulated widths only |
 | Successful/failed run counts (`verify:dashboard-run-outcomes`) | `evaluation/dashboard-run-outcomes-results.json` (2026-10-09, 44/44) | — |
-| Backend test suite (`npm test`) | 35 test files, stub providers only | Last full-suite result recorded in the docs: 415/415 on 2026-10-10. Files added since (PDF, feedback, deletions, Skills Gap, user management) were run individually; run `npm test` for a current total |
+| Backend test suite (`npm test`) | 37 test files, stub providers only | 539/539 on 2026-10-12 (full run) |
 | Skills Gap agent | `backend/tests/skillsGap*.test.ts` (stub provider) | **Never run against the real model** |
+
+## Technology stack
+
+| Layer | Technologies |
+|---|---|
+| Backend | Node.js, TypeScript, Express 4, Zod (validation), Winston (logging), `pdfjs-dist` (PDF text extraction) |
+| AI | OpenAI Chat Completions through the official `openai` SDK (default model `gpt-4o`), called only from the backend |
+| Database | SQLite through Prisma ORM 6 (schema and migrations in `backend/prisma/`) |
+| Auth | JWT access tokens (`jsonwebtoken`, HS256), opaque refresh tokens stored as SHA-256 hashes, `bcryptjs` password hashing |
+| Frontend | React 18, Vite 5, TypeScript, Tailwind CSS 3, Recharts (charts), Zustand (state), Axios, lucide-react (icons) |
+| Testing | Vitest and Supertest (backend); `playwright-core` driving the installed Google Chrome for the browser checks |
+| Tooling | npm workspaces (`backend`, `frontend`), ESLint, Prettier |
+
+## Project structure
+
+```text
+.
+├── backend/
+│   ├── prisma/
+│   │   ├── schema.prisma                   # data model (SQLite)
+│   │   ├── migrations/                     # SQLite migrations applied by Prisma
+│   │   └── migrations_postgresql_archive/  # archived, never applied (see docs/DATABASE.md)
+│   ├── src/
+│   │   ├── agents/          # CV Classification, Sentiment, Skills Gap agents (prompts, schemas, output guards)
+│   │   ├── config/          # environment validation, logger, model pricing
+│   │   ├── controllers/     # HTTP handlers
+│   │   ├── db/              # Prisma client, seed, test-database guard, startup migration check
+│   │   ├── evaluation/      # verification / evaluation scripts (npm run verify:*, audit:*, eval:*)
+│   │   ├── externalLogs/    # external agent log import
+│   │   ├── middleware/      # auth, RBAC, rate limiting, error handling
+│   │   ├── routes/          # Express routers
+│   │   ├── services/        # business logic, LLM adapter, usage logging, analytics
+│   │   ├── types/ utils/
+│   │   ├── app.ts           # Express app
+│   │   └── server.ts        # entry point
+│   ├── tests/               # Vitest suites and fixtures (stub providers, no network)
+│   ├── data/                # SQLite files are created here (git-ignored)
+│   ├── .env.example         # template -> .env.local (development)
+│   └── .env.test.example    # template -> .env.test (tests)
+├── frontend/
+│   ├── src/
+│   │   ├── components/      # tabs, analytics, charts, CV, sentiment, skills gap, admin users
+│   │   ├── hooks/ services/ store/ types/ utils/
+│   │   └── App.tsx, main.tsx
+│   ├── .env.example         # template -> .env.local (VITE_API_URL only)
+│   └── vite.config.ts
+├── docs/                    # analytics, database, logging, security and demo documentation; sample log files
+├── evaluation/              # evaluation dataset (synthetic CVs) and generated verification reports
+├── ARCHITECTURE.md          # canonical architecture description
+├── SETUP.md, QUICK_START.md
+└── package.json             # npm workspaces root
+```
 
 ## Prerequisites
 
@@ -55,6 +111,10 @@ A full-stack web application where several authenticated users run three LLM age
 Run from the repository root unless a step says otherwise. The blocks are bash. In **Windows PowerShell 5.1**, `cp` works (alias of `Copy-Item`) but `&&` does not: run the commands separately or join them with `;`.
 
 ```bash
+# 0. Clone
+git clone https://github.com/<owner>/<repository>.git
+cd <repository>
+
 # 1. Install both workspaces (also generates the Prisma Client)
 npm install
 
@@ -132,16 +192,35 @@ Full detail in [ARCHITECTURE.md](ARCHITECTURE.md).
 
 | Tab | What it does |
 |---|---|
-| ANALYTICS | Server-computed totals (tokens, estimated cost, estimated time saved), runs 24h/7d/30d and successful/failed, token consumption by agent (and by user for admins), error rate and latency by agent, CV acceptance rate, original vs final category with a doughnut chart, and an "incomplete totals" notice when usage data is missing |
-| MY RECORDS | Usage-log rows (own; all users for admins) |
-| AGENT RUNS | Runs with status, filters and details; "Usage incomplete" badges |
+| ANALYTICS | Server-computed totals (tokens, estimated cost, estimated time saved), runs 24h/7d/30d and successful/failed, token consumption by agent (and by user for admins), error rate and latency by agent, a decision outcomes doughnut (accepted / modified / rejected), CV acceptance rate per category, and an "incomplete totals" notice when usage data is missing |
+| MY RECORDS | Usage-log rows (own; all users for admins), newest first, 25 per page |
+| AGENT RUNS | Runs with status, filters and details; "Usage incomplete" badges; runs of deleted users are not shown |
 | CV PROCESSING | Upload and classify `.txt`/`.pdf` CVs (single or batch), see category, confidences, evidence and feedback, decide Accept/Modify/Reject, treemap of final decisions; admins can delete CVs |
 | SENTIMENT | Analyse feedback text; sentiment breakdown doughnut; admins can delete results |
 | SKILLS GAP ANALYSIS | Compare a CV with a target role and get a learning plan ([docs/SKILLS_GAP_AGENT.md](docs/SKILLS_GAP_AGENT.md)); admins can delete saved analyses |
 | EXTERNAL LOGS | Import `.json`/`.jsonl` logs from another agent and view their separate statistics |
-| ADMIN USERS (admin) | Token usage per user (bar chart); create users, change passwords, delete (deactivate) users |
+| ADMIN USERS (admin) | Token usage per active user (bar chart; deleted users are not shown); create users, change passwords, delete (deactivate) users |
 
 **Roles in one line:** users see and act on their own data only; admins see everyone's, manage users and are the only role that can delete anything. Identity always comes from the server-side session, never from a user id in the request.
+
+## Authentication, roles and analytics
+
+**Authentication.** Users sign in with email and password; passwords are stored as bcrypt hashes. There is no self sign-up: accounts come from the seed or are created by an admin.
+
+- **Access token:** a JWT signed with HS256 using `JWT_SECRET`, valid for `JWT_EXPIRY_SECONDS` (default 15 minutes), sent as `Authorization: Bearer <token>`. Every request also checks that the token's login session still exists, is not revoked or expired, and belongs to an active account, so logout and account deletion (deactivation) take effect immediately. The role is read from the database on each request, not from the token.
+- **Refresh token:** an opaque random value valid for `REFRESH_TOKEN_EXPIRY_SECONDS` (default 7 days). Only its SHA-256 hash is stored. Each refresh revokes the used token and issues a new one; logout revokes the session.
+- **Login throttling:** repeated failures for the same IP and email are locked out for 15 minutes (in memory).
+
+**Roles.**
+
+| Role | Can do |
+|---|---|
+| `USER` | Run the agents, decide on their own CV recommendations, and see only their own runs, results, usage logs and analytics |
+| `ADMIN` | Everything a user can, across all users; see per-user token usage; create users, change passwords, delete (deactivate) users; delete CVs, sentiment results and skills-gap analyses |
+
+Ownership checks happen on the server for every resource; a user id in the URL, query or body never decides who is asking.
+
+**Analytics.** Every LLM call writes a usage-log row with the provider's reported input/output tokens, the model, latency, status and an estimated cost from `backend/src/config/modelPricing.ts`. The dashboard's figures (token totals and cost, runs by period, success/failure counts, error rate and latency per agent, decision outcomes, CV acceptance rate per category, estimated time saved) are computed by the backend from those rows, scoped to the caller's own data unless the caller is an admin. Seeded demo records are excluded. Exact definitions: [docs/ANALYTICS_API.md](docs/ANALYTICS_API.md); logging details: [docs/USAGE_LOGGING.md](docs/USAGE_LOGGING.md).
 
 **AI rate limit:** `POST /api/cv/classify`, `POST /api/cv/documents/:documentId/classify`, `POST /api/cv/batch` (one run per file), `POST /api/sentiment/analyze` and `POST /api/skills-gap/analyze` share a per-user budget (default 60 runs per 10 minutes, sliding window, admins included). Over the limit: 429 with `Retry-After`, nothing created and no AI call. A 4xx rejection refunds its runs; a provider failure (502) does not. The counter is in memory and resets on restart.
 
@@ -157,8 +236,8 @@ All `/api/*` routes except login and refresh require `Authorization: Bearer <acc
 | CV | `POST /api/cv/classify` (text or PDF; upload + classify), `POST /api/cv/documents`, `POST /api/cv/documents/:documentId/classify`, `DELETE /api/cv/documents/:documentId` (admin), `POST /api/cv/batch` (202), `GET /api/cv/batch/:batchId/status`, `GET /api/cv/results`, `GET /api/cv/results/:id`, `POST /api/cv/results/:id/decision`, `GET /api/cv/results/:id/decisions` |
 | Sentiment | `POST /api/sentiment/analyze`, `GET /api/sentiment/results`, `GET /api/sentiment/results/:id`, `DELETE /api/sentiment/results/:id` (admin) |
 | Skills gap | `GET /api/skills-gap/roles`, `POST /api/skills-gap/analyze`, `GET /api/skills-gap/analyses`, `GET /api/skills-gap/analyses/:id`, `DELETE /api/skills-gap/analyses/:id` (admin) |
-| Usage logs | `GET /api/usage-logs` (own; all for admin), `GET /api/usage-logs/:userId` (self or admin, else 403) |
-| Agent runs | `GET /api/runs` (own; all for admin; `?userId=` for admins, `agent`, `status`, `usage=incomplete`, `limit` 1–100, `offset`), `GET /api/runs/:id` (owner or admin). Run metadata only: no CV/feedback text, prompts or tokens |
+| Usage logs | `GET /api/usage-logs` (own; all for admin, `?userId=` for admins; newest first; optional `limit` 1–500 and `offset`, default the newest 500; `meta: { total, limit, offset }`), `GET /api/usage-logs/:userId` (self or admin, else 403) |
+| Agent runs | `GET /api/runs` (own; all for admin; `?userId=` for admins, `agent`, `status`, `usage=incomplete`, `limit` 1–100, `offset`), `GET /api/runs/:id` (owner or admin). Runs of deleted (deactivated) users are left out of the list and read as 404. Run metadata only: no CV/feedback text, prompts or tokens |
 | Analytics | `GET /api/analytics/summary` (alias `/tokens`), `/by-agent`, `/by-user` (admin), `/runs`, `/errors`, `/latency`, `/acceptance-rate`, `/final-categories`, `/time-saved`, `/usage-completeness`, `/evaluation` (placeholder, returns only a message). Definitions: [docs/ANALYTICS_API.md](docs/ANALYTICS_API.md) |
 | External logs | `POST /api/import/logs`, `GET /api/import/logs`, `GET /api/import/logs/:importId`, `GET /api/import/stats` |
 
@@ -191,7 +270,7 @@ All run from `backend/`. "Controlled" means a scripted stand-in for OpenAI at th
 
 | Command | Provider | Needs | Proves | Does not prove |
 |---|---|---|---|---|
-| `npm test` (35 files; one file: `npm test -- adminUsers`) | Stubs, no OpenAI | `.env.test` | Auth, RBAC and isolation, user management, validation, decisions, deletions, batch, PDF extraction, analytics math, usage logging, import, prompt-injection handling, security regressions | How the real model behaves |
+| `npm test` (37 files; one file: `npm test -- adminUsers`) | Stubs, no OpenAI | `.env.test` | Auth, RBAC and isolation, user management, validation, decisions, deletions, batch, PDF extraction, analytics math, usage logging, import, prompt-injection handling, security regressions | How the real model behaves |
 | `npm run verify:ui` | Controlled, Chrome | Google Chrome | No page overflow, named controls, WCAG AA contrast on every tab for admin and a user at 1440/820/390/320 px; login, logout, focus; CV, batch and sentiment flows | Other browsers, real devices, screen readers |
 | `npm run verify:dashboard-run-outcomes` | Controlled, Chrome | Google Chrome | Successful/failed run counts: actions = database = API = rendered dashboard | Real-model behaviour |
 | `npm run verify:e2e-real-openai` | **Real OpenAI** (~23 calls, ≈ $0.09 last run) | API key | Full user/admin journeys, batch, concurrency, decisions, prompt injection, external logs, usage logs = raw OpenAI usage = analytics | The rendered dashboard; the Skills Gap agent |
@@ -251,6 +330,17 @@ Results are written to `evaluation/`. Real-OpenAI scripts cost money: run them o
 - **UI coverage.** Headless Chrome at emulated widths only; no arrow-key navigation in the tab bar and decision radio group; wide tables scroll sideways on phones.
 - **Dependencies.** `npm audit` reports 22 findings, all in development or CLI tooling ([docs/DEPENDENCY_AUDIT.md](docs/DEPENDENCY_AUDIT.md)).
 - **Deployment.** No Docker, CI or deployment configuration, and no production deployment guide.
+
+## Security considerations
+
+- **Secrets stay on your machine.** `OPENAI_API_KEY` and `JWT_SECRET` belong only in `backend/.env.local`, which git ignores. The committed `*.example` templates contain placeholders only. The backend refuses to start with a missing, short or placeholder `JWT_SECRET`.
+- **The OpenAI key never reaches the browser.** All model calls go through the backend; frontend env files hold only `VITE_API_URL`, and key-shaped text in provider errors is redacted before logging.
+- **Databases are local and git-ignored.** `backend/data/*.db` (and backups) contain password hashes, refresh-token hashes, uploaded CV text and usage history. Never commit them or share them; recreate a database from the migrations instead.
+- **CV and feedback text is sent to OpenAI.** Anything you upload or analyse is sent to the configured OpenAI model. Use synthetic or consented data.
+- **Demo credentials are public.** The seeded accounts use `password123` and exist for local demos only. Change or remove them before any shared use, and never run the seed against a database you need.
+- **Prompt injection.** CV and feedback text is treated as untrusted data, model output is validated against a schema and checked for leaked secrets or system-prompt text ([docs/PROMPT_INJECTION_SECURITY.md](docs/PROMPT_INJECTION_SECURITY.md)); this lowers the risk but is not a guarantee.
+- **Browser storage and missing CSP.** Tokens are in `localStorage` and no Content-Security-Policy is set (see [Known limitations](#known-limitations)).
+- **Before you push:** run `git status` and make sure no `.env*` file other than the `*.example` templates, no `*.db` file and no archive (`*.zip`) is staged.
 
 ## Troubleshooting
 
